@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Transliteration</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .result { background: #f0f8ff; padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Transliteration Test</h1>
+    
+    <div class="test-section">
+        <h2>Test English to Tamil</h2>
+        <div id="en-ta-test" class="result">Testing...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test English to Hindi</h2>
+        <div id="en-hi-test" class="result">Testing...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test Case Insensitive</h2>
+        <div id="case-test" class="result">Testing...</div>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/transliteration.js"></script>
+    <script>
+        // Test the transliteration functionality
+        async function runTests() {
+            try {
+                const app = new TransliterationApp();
+                
+                // Test 1: English to Tamil - "vanakkam"
+                const result1 = app.getFallbackTransliteration('vanakkam', 'en', 'ta');
+                document.getElementById('en-ta-test').innerHTML = `
+                    <strong>Input:</strong> "vanakkam" (en → ta)<br>
+                    <strong>Output:</strong> "${result1}"<br>
+                    <strong>Status:</strong> ${result1 === 'வணக்கம்' ? '<span class="success">✓ Success</span>' : '<span class="error">✗ Failed</span>'}
+                `;
+                
+                // Test 2: English to Hindi - "namaste"
+                const result2 = app.getFallbackTransliteration('namaste', 'en', 'hi');
+                document.getElementById('en-hi-test').innerHTML = `
+                    <strong>Input:</strong> "namaste" (en → hi)<br>
+                    <strong>Output:</strong> "${result2}"<br>
+                    <strong>Status:</strong> ${result2 === 'नमस्ते' ? '<span class="success">✓ Success</span>' : '<span class="error">✗ Failed</span>'}
+                `;
+                
+                // Test 3: Case insensitive - "HELLO"
+                const result3 = app.getFallbackTransliteration('HELLO', 'en', 'ta');
+                document.getElementById('case-test').innerHTML = `
+                    <strong>Input:</strong> "HELLO" (en → ta)<br>
+                    <strong>Output:</strong> "${result3}"<br>
+                    <strong>Status:</strong> ${result3 === 'ஹலோ' ? '<span class="success">✓ Success</span>' : '<span class="error">✗ Failed</span>'}
+                `;
+                
+            } catch (error) {
+                console.error('Test error:', error);
+            }
+        }
+        
+        // Run tests when page loads
+        document.addEventListener('DOMContentLoaded', runTests);
+    </script>
+</body>
+</html>

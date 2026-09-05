@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Train custom AI for transliteration with your own patterns and requirements">
+    <meta name="keywords" content="AI training, machine learning, transliteration, custom AI, neural network">
+    <title>AI Training - Custom Transliteration AI</title>
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="assets/styles/main.css">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        .ai-training-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .training-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .training-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .training-form {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .form-group label {
+            font-weight: 500;
+            color: var(--primary);
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .training-controls {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+        
+        .training-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .training-btn.primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .training-btn.secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .training-btn.success {
+            background: var(--success);
+            color: white;
+        }
+        
+        .training-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .training-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .progress-container {
+            margin: 1rem 0;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e1e5e9;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            text-align: center;
+            margin-top: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .training-status {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .training-log {
+            background: #f8f9fa;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 1rem;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        
+        .log-entry {
+            padding: 0.25rem 0;
+            border-bottom: 1px solid #e1e5e9;
+        }
+        
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        
+        .training-stats {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e1e5e9;
+        }
+        
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+        
+        .stat-trained {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .trained {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .not-trained {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .test-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 2rem;
+        }
+        
+        .test-section h3 {
+            color: white;
+            margin-bottom: 1rem;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .test-input, .test-output {
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .test-output {
+            background: rgba(255,255,255,0.9);
+            color: #333;
+        }
+        
+        .quick-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+        
+        @media (max-width: 768px) {
+            .training-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .test-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .training-controls {
+                flex-direction: column;
+            }
+            
+            .training-btn {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Skip to main content -->
+    <a href="#main" class="skip-link">Skip to main content</a>
+    
+    <!-- Header -->
+    <header class="header" role="banner">
+        <nav class="nav" role="navigation" aria-label="Main navigation">
+            <a href="index.html" class="logo" aria-label="Transliterations Tool Home">
+                <i class="fas fa-language" aria-hidden="true"></i>
+                <span>Transliterations Tool</span>
+            </a>
+            
+            <ul class="nav-menu" role="menubar">
+                <li role="none">
+                    <a href="index.html" class="nav-link" role="menuitem">
+                        <i class="fas fa-home" aria-hidden="true"></i>
+                        Home
+                    </a>
+                </li>
+                <li role="none">
+                    <a href="transliteration.html" class="nav-link" role="menuitem">
+                        <i class="fas fa-language" aria-hidden="true"></i>
+                        Transliterate
+                    </a>
+                </li>
+                <li role="none">
+                    <a href="ai-training.html" class="nav-link active" role="menuitem">
+                        <i class="fas fa-brain" aria-hidden="true"></i>
+                        AI Training
+                    </a>
+                </li>
+                <li role="none">
+                    <a href="about.html" class="nav-link" role="menuitem">
+                        <i class="fas fa-info-circle" aria-hidden="true"></i>
+                        About
+                    </a>
+                </li>
+                <li role="none">
+                    <a href="help.html" class="nav-link" role="menuitem">
+                        <i class="fas fa-question-circle" aria-hidden="true"></i>
+                        Help
+                    </a>
+                </li>
+                <li role="none">
+                    <a href="gallery.html" class="nav-link" role="menuitem">
+                        <i class="fas fa-images" aria-hidden="true"></i>
+                        Gallery
+                    </a>
+                </li>
+                <li role="none">
+                    <a href="contact.html" class="nav-link" role="menuitem">
+                        <i class="fas fa-envelope" aria-hidden="true"></i>
+                        Contact
+                    </a>
+                </li>
+            </ul>
+            
+            <button class="accessibility-btn" onclick="window.AccessibilityManager?.toggleHighContrast()" title="Toggle High Contrast">
+                <i class="fas fa-universal-access" aria-hidden="true"></i>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main id="main" class="main" role="main">
+        <div class="hero-section">
+            <div class="hero-content">
+                <h1>
+                    <i class="fas fa-brain" aria-hidden="true"></i>
+                    Custom AI Training
+                </h1>
+                <p class="hero-subtitle">
+                    Train your own AI transliterator with custom patterns and requirements
+                </p>
+            </div>
+        </div>
+
+        <div class="ai-training-container">
+            <!-- Status Display -->
+            <div id="training-status" class="training-status" style="display: none;"></div>
+
+            <!-- Training Configuration -->
+            <div class="training-section">
+                <h2><i class="fas fa-cogs"></i> Training Configuration</h2>
+                
+                <div class="training-grid">
+                    <div>
+                        <h3>Basic Settings</h3>
+                        <div class="training-form">
+                            <div class="form-group">
+                                <label for="source-lang-training">Source Language</label>
+                                <select id="source-lang-training">
+                                    <option value="en">English</option>
+                                    <option value="hi">Hindi</option>
+                                    <option value="ta">Tamil</option>
+                                    <option value="te">Telugu</option>
+                                    <option value="ml">Malayalam</option>
+                                    <option value="kn">Kannada</option>
+                                    <option value="gu">Gujarati</option>
+                                    <option value="bn">Bengali</option>
+                                    <option value="pa">Punjabi</option>
+                                    <option value="or">Odia</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="target-lang-training">Target Language</label>
+                                <select id="target-lang-training">
+                                    <option value="ta">Tamil</option>
+                                    <option value="hi">Hindi</option>
+                                    <option value="te">Telugu</option>
+                                    <option value="ml">Malayalam</option>
+                                    <option value="kn">Kannada</option>
+                                    <option value="gu">Gujarati</option>
+                                    <option value="bn">Bengali</option>
+                                    <option value="pa">Punjabi</option>
+                                    <option value="or">Odia</option>
+                                    <option value="en">English</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="training-epochs">Training Epochs</label>
+                                <input type="number" id="training-epochs" value="1000" min="100" max="5000" step="100">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="learning-rate">Learning Rate</label>
+                                <input type="number" id="learning-rate" value="0.001" min="0.0001" max="0.1" step="0.0001">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3>Add Training Data</h3>
+                        <div class="training-form">
+                            <div class="form-group">
+                                <label for="source-text-training">Source Text</label>
+                                <input type="text" id="source-text-training" placeholder="Enter source text...">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="target-text-training">Target Text</label>
+                                <input type="text" id="target-text-training" placeholder="Enter target transliteration...">
+                            </div>
+                            
+                            <button type="button" id="add-training-data-btn" class="training-btn primary">
+                                <i class="fas fa-plus"></i>
+                                Add Training Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Training Controls -->
+                <div class="training-controls">
+                    <button type="button" id="quick-train-btn" class="training-btn success">
+                        <i class="fas fa-rocket"></i>
+                        Quick Train (Phonetic)
+                    </button>
+                    
+                    <button type="button" id="train-model-btn" class="training-btn primary">
+                        <i class="fas fa-brain"></i>
+                        Train Model
+                    </button>
+                    
+                    <button type="button" id="export-model-btn" class="training-btn secondary">
+                        <i class="fas fa-download"></i>
+                        Export Model
+                    </button>
+                    
+                    <div class="file-input-wrapper">
+                        <button type="button" class="training-btn secondary">
+                            <i class="fas fa-upload"></i>
+                            Import Model
+                        </button>
+                        <input type="file" id="import-model-btn" accept=".json">
+                    </div>
+                </div>
+
+                <!-- Training Progress -->
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div id="training-progress-bar" class="progress-fill"></div>
+                    </div>
+                    <div id="training-progress-text" class="progress-text">0%</div>
+                </div>
+            </div>
+
+            <!-- Bulk Training Data -->
+            <div class="training-section">
+                <h3><i class="fas fa-database"></i> Bulk Training Data</h3>
+                <div class="form-group">
+                    <label for="bulk-training-input">
+                        Bulk Training Data (Format: source_text [TAB] target_text, one pair per line)
+                    </label>
+                    <textarea id="bulk-training-input" rows="8" 
+                              placeholder="hello	ஹலோ&#10;good	குட்&#10;water	வாட்டர்&#10;..."></textarea>
+                </div>
+                <button type="button" onclick="window.aiTrainingInterface?.generateTrainingData()" class="training-btn primary">
+                    <i class="fas fa-upload"></i>
+                    Add Bulk Training Data
+                </button>
+            </div>
+
+            <!-- Training Stats and Log -->
+            <div class="training-grid">
+                <div class="training-section">
+                    <h3><i class="fas fa-chart-bar"></i> Training Statistics</h3>
+                    <div id="training-stats" class="training-stats">
+                        <p>No training data yet. Add some training examples to see statistics.</p>
+                    </div>
+                </div>
+                
+                <div class="training-section">
+                    <h3><i class="fas fa-list"></i> Training Log</h3>
+                    <div id="training-log" class="training-log">
+                        <div class="log-entry">Ready to start training...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Testing -->
+            <div class="test-section">
+                <h3><i class="fas fa-flask"></i> Test Your AI</h3>
+                <p>Test your trained AI model with custom input</p>
+                
+                <div class="test-grid">
+                    <div class="form-group">
+                        <label for="test-input" style="color: white;">Test Input</label>
+                        <textarea id="test-input" class="test-input" 
+                                  placeholder="Enter text to test your AI..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="test-output" style="color: white;">AI Output</label>
+                        <textarea id="test-output" class="test-output" readonly
+                                  placeholder="AI transliteration will appear here..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="quick-actions">
+                    <button type="button" id="test-ai-btn" class="training-btn primary">
+                        <i class="fas fa-play"></i>
+                        Test AI
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Training Examples -->
+            <div class="training-section">
+                <h3><i class="fas fa-lightbulb"></i> Training Tips & Examples</h3>
+                
+                <div class="training-grid">
+                    <div>
+                        <h4>Phonetic Training</h4>
+                        <p>For sound-based transliteration:</p>
+                        <ul>
+                            <li><code>hello → ஹலோ</code></li>
+                            <li><code>computer → கம்ப்யூட்டர்</code></li>
+                            <li><code>internet → இண்டர்நெட்</code></li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4>Semantic Training</h4>
+                        <p>For meaning-based transliteration:</p>
+                        <ul>
+                            <li><code>good → நல்ல</code></li>
+                            <li><code>water → தண்ணீர்</code></li>
+                            <li><code>home → வீடு</code></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 1rem;">
+                    <h4>Training Requirements Examples</h4>
+                    <p>You can train the AI with different requirements:</p>
+                    <ul>
+                        <li><strong>Phonetic emphasis:</strong> Focus on sound-based transliteration</li>
+                        <li><strong>Semantic emphasis:</strong> Focus on meaning-based transliteration</li>
+                        <li><strong>Mixed mode:</strong> Combination of both approaches</li>
+                        <li><strong>Custom patterns:</strong> Specific word pairs you want to learn</li>
+                        <li><strong>Rule-based:</strong> Grammatical rules for word formation</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" role="contentinfo">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Transliterations Tool</h3>
+                <p>Advanced AI-powered transliteration with custom training capabilities</p>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Features</h4>
+                <ul>
+                    <li><a href="transliteration.html">Text Transliteration</a></li>
+                    <li><a href="ai-training.html">AI Training</a></li>
+                    <li><a href="gallery.html">Examples Gallery</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="help.html">Documentation</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2025 AICTE Transliterations Tool. Powered by custom AI and IndicXlit technology.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/utils.js"></script>
+    <script src="js/accessibility.js"></script>
+    <script src="js/custom-ai-transliterator.js"></script>
+    <script src="js/ai-training-interface.js"></script>
+    
+    <script>
+        // Initialize AI training interface
+        document.addEventListener('DOMContentLoaded', () => {
+            window.aiTrainingInterface = new AITrainingInterface();
+        });
+    </script>
+</body>
+</html>
