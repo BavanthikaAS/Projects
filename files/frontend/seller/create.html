@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Listing — Auction Hub Seller</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    .create-listing-layout {
+      max-width: 800px;
+      margin: 2.5rem auto 5rem auto;
+      background: #FFFFFF;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 2.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+    .format-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .format-card {
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      cursor: pointer;
+      transition: var(--transition-fast);
+      text-align: center;
+    }
+    .format-card.active {
+      border-color: var(--color-primary);
+      background-color: var(--color-surface-hover);
+    }
+    .format-card.active.auction-format {
+      border-color: var(--color-accent);
+      background-color: var(--color-accent-light);
+    }
+    .attribute-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header class="navbar">
+    <div class="navbar-container">
+      <a href="/" class="nav-brand">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polygon points="12 6 12 12 16 14"></polygon>
+        </svg>
+        <span>Auction<span class="logo-highlight">Hub</span></span>
+      </a>
+      <a href="/seller.html" class="nav-link">&larr; Back to Seller Dashboard</a>
+      <div id="nav-auth-container" class="nav-actions"></div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="create-listing-layout">
+      <div style="margin-bottom: 2rem;">
+        <h1 style="font-size: 1.85rem; color: var(--color-primary); margin-bottom: 0.4rem;">List an Item for Sale</h1>
+        <p style="color: var(--color-text-muted); font-size: 0.95rem;">Fill out the details below. You can choose a direct Buy Now price or a live Auction.</p>
+      </div>
+
+      <!-- AI Listing Assistant Panel (Pre-fill option) -->
+      <div class="ai-panel" style="margin-top: 0; margin-bottom: 2rem;">
+        <div class="ai-panel-header">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span class="ai-badge">AI Listing Assistant</span>
+            <span style="font-size: 0.88rem; font-weight: 600;">Draft in seconds</span>
+          </div>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 0.75rem;">
+          Type a rough description of your item (e.g. "Selling iPhone 13 128GB blue, 1.5 yrs old, slight scuff on corner, original box and cable included").
+        </p>
+        <div style="display: flex; gap: 0.5rem;">
+          <input type="text" id="ai-draft-input" class="form-control" placeholder="Describe your item in plain English...">
+          <button type="button" class="btn btn-accent" onclick="runAiListingAssist()" id="ai-assist-btn">Draft for Me</button>
+        </div>
+        <div class="ai-disclaimer">AI extracts title, category, condition, and specs into editable fields. You review everything before publishing.</div>
+      </div>
+
+      <form id="create-listing-form" onsubmit="handleCreateListing(event)">
+        
+        <!-- Listing Format Choice -->
+        <label class="form-label">Choose Selling Format <span class="req">*</span></label>
+        <div class="format-selector">
+          <div class="format-card active" id="format-buynow-card" onclick="setFormat('buy_now')">
+            <h3 style="font-size: 1.1rem; color: var(--color-primary); margin-bottom: 0.25rem;">Buy Now</h3>
+            <p style="font-size: 0.82rem; color: var(--color-text-muted);">Set a fixed price for instant checkout</p>
+          </div>
+          <div class="format-card auction-format" id="format-auction-card" onclick="setFormat('auction')">
+            <h3 style="font-size: 1.1rem; color: #9A6C17; margin-bottom: 0.25rem;">⚡ Live Auction</h3>
+            <p style="font-size: 0.82rem; color: var(--color-text-muted);">Let buyers bid starting from your base price</p>
+          </div>
+        </div>
+        <input type="hidden" id="listing-type" value="buy_now">
+
+        <!-- Title -->
+        <div class="form-group">
+          <label class="form-label" for="listing-title">Listing Title <span class="req">*</span></label>
+          <input type="text" id="listing-title" class="form-control" placeholder="e.g. Apple MacBook Air M1 (2020) 8GB/256GB Space Grey" required minlength="3">
+        </div>
+
+        <div class="form-row-2">
+          <!-- Category -->
+          <div class="form-group">
+            <label class="form-label" for="listing-category">Category <span class="req">*</span></label>
+            <select id="listing-category" class="form-control" required>
+              <option value="">Select Category</option>
+            </select>
+          </div>
+          <!-- Condition -->
+          <div class="form-group">
+            <label class="form-label" for="listing-condition">Condition <span class="req">*</span></label>
+            <select id="listing-condition" class="form-control" required>
+              <option value="like_new">Like New (flawless, barely used)</option>
+              <option value="good" selected>Good (minor normal wear)</option>
+              <option value="fair">Fair (noticeable wear/scratches)</option>
+              <option value="poor">Poor (heavy wear, functional)</option>
+              <option value="new">New (sealed in original packaging)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <!-- Brand -->
+          <div class="form-group">
+            <label class="form-label" for="listing-brand">Brand</label>
+            <input type="text" id="listing-brand" class="form-control" placeholder="e.g. Apple, Sony, Dell">
+          </div>
+          <!-- Model -->
+          <div class="form-group">
+            <label class="form-label" for="listing-model">Model / Version</label>
+            <input type="text" id="listing-model" class="form-control" placeholder="e.g. Air M1, WH-1000XM4">
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <!-- Age in Months -->
+          <div class="form-group">
+            <label class="form-label" for="listing-age">Product Age (Months)</label>
+            <input type="number" id="listing-age" class="form-control" placeholder="e.g. 14" min="0">
+          </div>
+          <!-- Original Retail Price -->
+          <div class="form-group">
+            <label class="form-label" for="listing-original-price">Original Retail Price (₹)</label>
+            <input type="number" id="listing-original-price" class="form-control" placeholder="e.g. 92000" min="0">
+          </div>
+        </div>
+
+        <!-- Buy Now Specific: Price -->
+        <div id="buynow-fields">
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+              <label class="form-label" for="listing-price">Selling Price (₹) <span class="req">*</span></label>
+              <button type="button" onclick="getAiPriceGuidance()" style="font-size: 0.8rem; color: #9A6C17; font-weight: 700;">
+                ✨ Get AI Price Guidance
+              </button>
+            </div>
+            <input type="number" id="listing-price" class="form-control" placeholder="e.g. 45000" min="1">
+            <div id="price-guidance-box" style="display: none; margin-top: 0.5rem; padding: 0.75rem; background-color: var(--color-accent-light); border: 1px solid var(--color-accent-border); border-radius: var(--radius-sm); font-size: 0.85rem;"></div>
+          </div>
+        </div>
+
+        <!-- Auction Specific: Starting Bid, Increment, Duration -->
+        <div id="auction-fields" style="display: none; background-color: #FFFDF8; border: 1px solid var(--color-accent-border); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.5rem;">
+          <h4 style="color: #9A6C17; margin-bottom: 1rem;">⚡ Auction Rules & Timing</h4>
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="auction-starting-bid">Starting Bid (₹) <span class="req">*</span></label>
+              <input type="number" id="auction-starting-bid" class="form-control" placeholder="e.g. 30000" min="1">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="auction-min-increment">Minimum Increment (₹) <span class="req">*</span></label>
+              <input type="number" id="auction-min-increment" class="form-control" value="500" min="1">
+            </div>
+          </div>
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="auction-reserve-price">Reserve Price (₹) <span style="font-size: 0.78rem; color: var(--color-text-muted);">(Optional secret floor)</span></label>
+              <input type="number" id="auction-reserve-price" class="form-control" placeholder="Item unsold if bids don't reach this">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="auction-duration-days">Duration (Days)</label>
+              <select id="auction-duration-days" class="form-control">
+                <option value="1">1 Day (Quick 24h)</option>
+                <option value="3" selected>3 Days (Recommended)</option>
+                <option value="5">5 Days</option>
+                <option value="7">7 Days</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label class="form-label" for="listing-description">Detailed Description <span class="req">*</span></label>
+          <textarea id="listing-description" class="form-control" rows="5" placeholder="Describe the item's working condition, history, included accessories, or reasons for selling..." required minlength="10"></textarea>
+        </div>
+
+        <!-- Location & Details -->
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label" for="listing-location">Item Location / City</label>
+            <input type="text" id="listing-location" class="form-control" placeholder="e.g. Bangalore, Karnataka">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="listing-accessories">Accessories Included</label>
+            <input type="text" id="listing-accessories" class="form-control" placeholder="e.g. Original 67W Charger, Box">
+          </div>
+        </div>
+
+        <!-- Defects & Warranty -->
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label" for="listing-defects">Known Defects / Blemishes</label>
+            <input type="text" id="listing-defects" class="form-control" placeholder="e.g. Minor hairline scratch on bezel">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="listing-warranty">Warranty Info</label>
+            <input type="text" id="listing-warranty" class="form-control" placeholder="e.g. AppleCare+ until Dec 2026">
+          </div>
+        </div>
+
+        <!-- Image URLs (Mock/Supabase Storage Hook) -->
+        <div class="form-group">
+          <label class="form-label">Product Images (URLs)</label>
+          <input type="url" id="listing-img-1" class="form-control" placeholder="Primary Image URL" style="margin-bottom: 0.5rem;">
+          <input type="url" id="listing-img-2" class="form-control" placeholder="Secondary Image URL" style="margin-bottom: 0.5rem;">
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+          <button type="submit" id="submit-publish-btn" class="btn btn-primary" style="flex: 1; padding: 0.85rem; font-size: 1rem;">
+            Publish Listing Immediately
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script>
+    if (!API.isAuthenticated()) {
+      showToast('Please sign in to list items', 'info');
+      setTimeout(() => window.location.href = '/login.html?redirect=/seller/create.html', 500);
+    }
+
+    let categories = [];
+
+    async function init() {
+      try {
+        categories = await API.get('/api/categories');
+        const select = document.getElementById('listing-category');
+        select.innerHTML = '<option value="">Select Category</option>' + categories.map(c => 
+          `<option value="${c.id}">${escapeHtml(c.name)}</option>`
+        ).join('');
+      } catch (err) {
+        showToast('Error loading categories', 'error');
+      }
+    }
+
+    function setFormat(format) {
+      document.getElementById('listing-type').value = format;
+      const buyCard = document.getElementById('format-buynow-card');
+      const aucCard = document.getElementById('format-auction-card');
+      const buyFields = document.getElementById('buynow-fields');
+      const aucFields = document.getElementById('auction-fields');
+
+      if (format === 'buy_now') {
+        buyCard.classList.add('active');
+        aucCard.classList.remove('active');
+        buyFields.style.display = 'block';
+        aucFields.style.display = 'none';
+        document.getElementById('listing-price').required = true;
+        document.getElementById('auction-starting-bid').required = false;
+      } else {
+        buyCard.classList.remove('active');
+        aucCard.classList.add('active');
+        buyFields.style.display = 'none';
+        aucFields.style.display = 'block';
+        document.getElementById('listing-price').required = false;
+        document.getElementById('auction-starting-bid').required = true;
+      }
+    }
+
+    async function runAiListingAssist() {
+      const text = document.getElementById('ai-draft-input').value.trim();
+      if (!text) {
+        showToast('Please enter a short description for the AI', 'warning');
+        return;
+      }
+      const btn = document.getElementById('ai-assist-btn');
+      btn.disabled = true;
+      btn.textContent = 'Analyzing...';
+
+      try {
+        const res = await API.post('/api/ai/listing-assist', { description: text });
+        if (res.title) document.getElementById('listing-title').value = res.title;
+        if (res.brand) document.getElementById('listing-brand').value = res.brand;
+        if (res.model) document.getElementById('listing-model').value = res.model;
+        if (res.condition) document.getElementById('listing-condition').value = res.condition;
+        if (res.description) document.getElementById('listing-description').value = res.description;
+        if (res.category_slug) {
+          const cat = categories.find(c => c.slug === res.category_slug);
+          if (cat) document.getElementById('listing-category').value = cat.id;
+        }
+        showToast('Form pre-filled by AI! Please review before submitting.', 'success');
+      } catch (err) {
+        showToast('AI assistance unavailable right now. Please fill the form manually.', 'info');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Draft for Me';
+      }
+    }
+
+    async function getAiPriceGuidance() {
+      const title = document.getElementById('listing-title').value.trim();
+      const condition = document.getElementById('listing-condition').value;
+      const originalPrice = document.getElementById('listing-original-price').value;
+      const ageMonths = document.getElementById('listing-age').value;
+
+      if (!title) {
+        showToast('Please enter a title and condition first', 'warning');
+        return;
+      }
+
+      const box = document.getElementById('price-guidance-box');
+      box.style.display = 'block';
+      box.textContent = 'Consulting AI price model...';
+
+      try {
+        const res = await API.post('/api/ai/price-guidance', {
+          title,
+          condition,
+          original_price: originalPrice ? Number(originalPrice) : null,
+          product_age_months: ageMonths ? Number(ageMonths) : null
+        });
+        box.innerHTML = `
+          <strong>AI Price Guidance:</strong> Suggested Range: <strong>₹${res.suggested_min} – ₹${res.suggested_max}</strong><br>
+          <span style="color: var(--color-text-muted);">${escapeHtml(res.reasoning || '')}</span><br>
+          <em style="font-size: 0.75rem; color: var(--color-text-light);">AI-assisted guidance, not a guaranteed value.</em>
+        `;
+      } catch (err) {
+        box.innerHTML = `<span style="color: var(--color-text-muted);">AI price guidance is temporarily unavailable.</span>`;
+      }
+    }
+
+    async function handleCreateListing(e) {
+      e.preventDefault();
+      const format = document.getElementById('listing-type').value;
+      const title = document.getElementById('listing-title').value.trim();
+      const categoryId = document.getElementById('listing-category').value;
+      const condition = document.getElementById('listing-condition').value;
+      const brand = document.getElementById('listing-brand').value.trim() || null;
+      const model = document.getElementById('listing-model').value.trim() || null;
+      const age = document.getElementById('listing-age').value ? parseInt(document.getElementById('listing-age').value) : null;
+      const originalPrice = document.getElementById('listing-original-price').value ? Number(document.getElementById('listing-original-price').value) : null;
+      const description = document.getElementById('listing-description').value.trim();
+      const location = document.getElementById('listing-location').value.trim() || null;
+      const accessories = document.getElementById('listing-accessories').value.trim() || null;
+      const defects = document.getElementById('listing-defects').value.trim() || null;
+      const warranty = document.getElementById('listing-warranty').value.trim() || null;
+      const price = format === 'buy_now' ? Number(document.getElementById('listing-price').value) : null;
+
+      const images = [];
+      const img1 = document.getElementById('listing-img-1').value.trim();
+      const img2 = document.getElementById('listing-img-2').value.trim();
+      if (img1) images.push(img1);
+      if (img2) images.push(img2);
+
+      const btn = document.getElementById('submit-publish-btn');
+      btn.disabled = true;
+      btn.textContent = 'Publishing...';
+
+      try {
+        // 1. Create Draft Product
+        const product = await API.post('/api/products', {
+          category_id: categoryId,
+          title,
+          brand,
+          model,
+          condition,
+          product_age_months: age,
+          original_price: originalPrice,
+          listing_type: format,
+          price,
+          description,
+          location,
+          accessories_included: accessories,
+          defects_notes: defects,
+          warranty_info: warranty,
+          images,
+          attributes: []
+        });
+
+        // 2. If Auction, create Auction record
+        if (format === 'auction') {
+          const startingBid = Number(document.getElementById('auction-starting-bid').value);
+          const minIncrement = Number(document.getElementById('auction-min-increment').value) || 500;
+          const reservePrice = document.getElementById('auction-reserve-price').value ? Number(document.getElementById('auction-reserve-price').value) : null;
+          const durationDays = parseInt(document.getElementById('auction-duration-days').value) || 3;
+
+          const now = new Date();
+          const endTime = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000);
+
+          await API.post('/api/auctions', {
+            product_id: product.id,
+            starting_bid: startingBid,
+            min_increment: minIncrement,
+            reserve_price: reservePrice,
+            start_time: now.toISOString(),
+            end_time: endTime.toISOString()
+          });
+        }
+
+        // 3. Publish the listing
+        await API.post(`/api/products/${product.id}/publish`);
+
+        showToast('Listing published successfully!', 'success');
+        setTimeout(() => window.location.href = `/product.html?id=${product.id}`, 600);
+      } catch (err) {
+        showToast(err.message || 'Error creating listing', 'error');
+        btn.disabled = false;
+        btn.textContent = 'Publish Listing Immediately';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

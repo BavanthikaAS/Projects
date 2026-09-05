@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create an Account — Auction Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    .auth-page {
+      min-height: 80vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2.5rem 1.25rem;
+    }
+    .auth-card {
+      width: 100%;
+      max-width: 480px;
+      background: #FFFFFF;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 2.5rem 2rem;
+      box-shadow: var(--shadow-md);
+    }
+    .auth-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .auth-header h1 {
+      font-size: 1.65rem;
+      color: var(--color-primary);
+      margin-bottom: 0.35rem;
+    }
+    .auth-header p {
+      font-size: 0.9rem;
+      color: var(--color-text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header class="navbar">
+    <div class="navbar-container">
+      <a href="/" class="nav-brand">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polygon points="12 6 12 12 16 14"></polygon>
+        </svg>
+        <span>Auction<span class="logo-highlight">Hub</span></span>
+      </a>
+      <a href="/" class="nav-link">&larr; Back to Marketplace</a>
+    </div>
+  </header>
+
+  <main class="auth-page">
+    <div class="auth-card">
+      <div class="auth-header">
+        <h1>Create Your Account</h1>
+        <p>One account to buy, bid, and sell second-hand goods</p>
+      </div>
+
+      <div id="auth-error-alert" style="display: none; background-color: var(--color-error-bg); border-left: 4px solid var(--color-error); padding: 0.75rem 1rem; border-radius: var(--radius-sm); margin-bottom: 1.25rem; font-size: 0.88rem; color: var(--color-error);"></div>
+
+      <form id="register-form" onsubmit="handleRegister(event)">
+        <div class="form-group">
+          <label class="form-label" for="reg-name">Full Name <span class="req">*</span></label>
+          <input type="text" id="reg-name" class="form-control" placeholder="e.g. Rahul Sharma" required autocomplete="name">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="reg-email">Email Address <span class="req">*</span></label>
+          <input type="email" id="reg-email" class="form-control" placeholder="you@example.com" required autocomplete="email">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="reg-phone">Phone Number <span style="font-weight: 400; color: var(--color-text-muted);">(Optional)</span></label>
+          <input type="tel" id="reg-phone" class="form-control" placeholder="+91 98765 43210" autocomplete="tel">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="reg-password">Password <span class="req">*</span></label>
+          <input type="password" id="reg-password" class="form-control" placeholder="Minimum 6 characters" required minlength="6" autocomplete="new-password">
+        </div>
+
+        <button type="submit" id="reg-submit-btn" class="btn btn-accent" style="width: 100%; margin-top: 0.5rem; padding: 0.75rem; font-size: 1rem;">
+          Create Free Account
+        </button>
+      </form>
+
+      <div style="text-align: center; margin-top: 1.5rem; font-size: 0.88rem; color: var(--color-text-muted);">
+        Already have an account? <a href="/login.html" style="color: var(--color-primary); font-weight: 600;">Sign in here</a>
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script>
+    if (API.isAuthenticated()) {
+      window.location.href = '/';
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const fullName = document.getElementById('reg-name').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const phone = document.getElementById('reg-phone').value.trim();
+      const password = document.getElementById('reg-password').value;
+      const btn = document.getElementById('reg-submit-btn');
+      const alert = document.getElementById('auth-error-alert');
+
+      if (password.length < 6) {
+        alert.textContent = 'Password must be at least 6 characters long.';
+        alert.style.display = 'block';
+        return;
+      }
+
+      alert.style.display = 'none';
+      btn.disabled = true;
+      btn.textContent = 'Creating account...';
+
+      try {
+        await API.register({
+          email,
+          password,
+          full_name: fullName,
+          phone: phone || null
+        });
+        showToast('Account created successfully!', 'success');
+        setTimeout(() => window.location.href = '/', 500);
+      } catch (err) {
+        alert.textContent = err.message || 'Registration failed. Please check your information.';
+        alert.style.display = 'block';
+        showToast(err.message || 'Registration failed', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Create Free Account';
+      }
+    }
+  </script>
+</body>
+</html>

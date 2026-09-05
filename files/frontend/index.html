@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auction Hub — AI-Powered Second-Hand Marketplace & Auctions</title>
+  <meta name="description" content="Buy, sell, and bid on quality second-hand goods with AI-powered smart search, price guidance, and fair auction mechanics.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+  <!-- Sticky Top Navigation -->
+  <header class="navbar">
+    <div class="navbar-container">
+      <a href="/" class="nav-brand" id="nav-brand-logo">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polygon points="12 6 12 12 16 14"></polygon>
+        </svg>
+        <span>Auction<span class="logo-highlight">Hub</span></span>
+      </a>
+
+      <!-- Search Bar with inline AI Toggle -->
+      <form class="nav-search-bar" id="navbar-search-form" onsubmit="handleNavSearch(event)">
+        <button type="button" class="ai-toggle-btn" id="nav-ai-toggle" onclick="toggleNavAiMode()" title="Toggle AI Natural Language Search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+          </svg>
+          <span id="ai-toggle-label">Ask AI</span>
+        </button>
+        <input type="text" id="nav-search-input" placeholder="Search second-hand phones, laptops, gear..." autocomplete="off">
+        <button type="submit" class="search-submit-btn" aria-label="Submit search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
+      </form>
+
+      <!-- Nav Actions -->
+      <div class="nav-actions">
+        <a href="/wishlist.html" class="nav-icon-btn" aria-label="Wishlist" id="nav-wishlist-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+          </svg>
+          <span class="badge-count" id="wishlist-count-badge" style="display: none;">0</span>
+        </a>
+
+        <a href="/cart.html" class="nav-icon-btn" aria-label="Shopping Cart" id="nav-cart-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          </svg>
+          <span class="badge-count" id="cart-count-badge" style="display: none;">0</span>
+        </a>
+
+        <a href="/notifications.html" class="nav-icon-btn" aria-label="Notifications" id="nav-notifications-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          <span class="badge-count" id="notif-count-badge" style="display: none;">0</span>
+        </a>
+
+        <a href="/seller/create.html" class="btn-sell" id="nav-sell-btn">+ Sell Item</a>
+
+        <div id="nav-auth-container" class="nav-actions">
+          <a href="/login.html" class="nav-link">Sign In</a>
+          <a href="/register.html" class="btn btn-accent" style="padding: 0.35rem 0.9rem; font-size: 0.85rem;">Register</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Categories Sub-bar -->
+  <nav class="categories-bar" aria-label="Product categories">
+    <div class="categories-list" id="categories-nav-list">
+      <a href="/search.html" class="category-item active">All Items</a>
+      <a href="/search.html?category=electronics" class="category-item">Electronics</a>
+      <a href="/search.html?category=laptops-computers" class="category-item">Laptops & PC</a>
+      <a href="/search.html?category=mobiles-tablets" class="category-item">Phones & Tablets</a>
+      <a href="/search.html?category=audio-gear" class="category-item">Audio & Wearables</a>
+      <a href="/search.html?category=gaming-consoles" class="category-item">Gaming</a>
+      <a href="/search.html?category=cameras-optics" class="category-item">Cameras</a>
+      <a href="/search.html?category=appliances" class="category-item">Appliances</a>
+      <a href="/search.html?listing_type=auction" class="category-item" style="color: #9A6C17; font-weight: 700;">⚡ Live Auctions</a>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1 class="hero-title">Discover Great Deals or <span class="accent-text">Bid in Real-Time</span></h1>
+      <p class="hero-subtitle">The fair marketplace for quality second-hand tech and goods with intelligent search and verified transparent bidding.</p>
+      
+      <div class="hero-search-wrapper">
+        <form class="hero-search-input-row" onsubmit="handleHeroSearch(event)">
+          <button type="button" class="ai-toggle-btn active" id="hero-ai-toggle" onclick="toggleHeroAiMode()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+            </svg>
+            <span>AI Natural Search</span>
+          </button>
+          <input type="text" id="hero-search-input" placeholder="e.g. 'Coding laptop under ₹45,000 with 16GB RAM and good battery'" required>
+          <button type="submit" class="hero-search-btn">Search Market</button>
+        </form>
+        <div class="hero-ai-hint">
+          <span class="tag">AI Search</span>
+          <span>Describe what you need in plain English — our AI maps your budget, specs, and condition automatically.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Marketplace Content -->
+  <main class="container">
+    
+    <!-- Section 1: Ending-Soon Auctions -->
+    <section class="section" id="ending-soon-auctions-section">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="2.5">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+            Ending-Soon Auctions
+          </h2>
+          <p class="section-subtitle">High-demand items closing soon. Bid before the clock runs out.</p>
+        </div>
+        <a href="/search.html?listing_type=auction" class="section-link">
+          View all auctions &rarr;
+        </a>
+      </div>
+
+      <div class="product-grid" id="ending-soon-grid">
+        <!-- Auction cards dynamically loaded here -->
+        <div class="card auction-card" style="padding: 2rem; text-align: center; grid-column: 1 / -1; color: var(--color-text-muted);">
+          Loading active auctions...
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: Featured Buy Now & Marketplace Products -->
+    <section class="section" id="featured-products-section">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+            </svg>
+            Featured Listings
+          </h2>
+          <p class="section-subtitle">Verified second-hand electronics and devices available for immediate purchase.</p>
+        </div>
+        <a href="/search.html?listing_type=buy_now" class="section-link">
+          Explore all &rarr;
+        </a>
+      </div>
+
+      <div class="product-grid" id="featured-products-grid">
+        <!-- Product cards dynamically loaded here -->
+        <div class="card" style="padding: 2rem; text-align: center; grid-column: 1 / -1; color: var(--color-text-muted);">
+          Loading marketplace listings...
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: How Auction Hub Works (3-Step Strip) -->
+    <section class="section" style="background-color: #FFFFFF; border-radius: var(--radius-lg); padding: 2.5rem; margin: 2rem 0; border: 1px solid var(--color-border);">
+      <h2 style="text-align: center; font-size: 1.5rem; color: var(--color-primary); margin-bottom: 2rem;">How Auction Hub Works</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 2rem;">
+        <div style="text-align: center;">
+          <div style="width: 56px; height: 56px; border-radius: 50%; background-color: var(--color-accent-light); color: #9A6C17; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto; font-size: 1.3rem; font-weight: 800;">1</div>
+          <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">List or Discover</h3>
+          <p style="font-size: 0.9rem; color: var(--color-text-muted);">Sellers describe items with AI assistance. Buyers find what they need in plain language.</p>
+        </div>
+        <div style="text-align: center;">
+          <div style="width: 56px; height: 56px; border-radius: 50%; background-color: var(--color-accent-light); color: #9A6C17; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto; font-size: 1.3rem; font-weight: 800;">2</div>
+          <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Buy Instantly or Bid</h3>
+          <p style="font-size: 0.9rem; color: var(--color-text-muted);">Choose direct Buy Now checkout or compete in race-condition safe live auctions.</p>
+        </div>
+        <div style="text-align: center;">
+          <div style="width: 56px; height: 56px; border-radius: 50%; background-color: var(--color-accent-light); color: #9A6C17; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto; font-size: 1.3rem; font-weight: 800;">3</div>
+          <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Secure Order & Review</h3>
+          <p style="font-size: 0.9rem; color: var(--color-text-muted);">Track fulfillment step-by-step, complete transactions, and build verified trust scores.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 4: Trust & Safety Note -->
+    <section class="section" style="padding: 1.5rem 0;">
+      <div style="background-color: var(--color-surface); border-left: 4px solid var(--color-primary); padding: 1.25rem 1.75rem; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap;">
+        <div>
+          <h3 style="font-size: 1.05rem; color: var(--color-primary); margin-bottom: 0.25rem;">Marketplace Integrity & Fair Auctions</h3>
+          <p style="font-size: 0.88rem; color: var(--color-text-muted);">All bids are strictly verified server-side with zero shill bidding allowed. AI never bids or purchases autonomously.</p>
+        </div>
+        <a href="/trust-safety.html" class="btn btn-outline" style="font-size: 0.85rem;">Learn About Trust & Policies</a>
+      </div>
+    </section>
+
+    <!-- Section 5: Seller CTA Banner -->
+    <section class="section" style="padding: 2rem 0 4rem 0;">
+      <div style="background: linear-gradient(135deg, var(--color-primary) 0%, #2D3E64 100%); color: #FFFFFF; border-radius: var(--radius-lg); padding: 3rem 2rem; text-align: center;">
+        <h2 style="font-size: 1.85rem; margin-bottom: 0.75rem;">Turn Your Unused Tech Into Cash</h2>
+        <p style="color: #CBD5E1; max-width: 580px; margin: 0 auto 1.75rem auto; font-size: 0.98rem;">Draft structured listings in seconds with AI assistance and get price range recommendations based on real market comps.</p>
+        <a href="/seller/create.html" class="btn btn-accent" style="padding: 0.75rem 2rem; font-size: 1rem;">Create Your Listing</a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand">Auction<span style="color: var(--color-accent);">Hub</span></div>
+          <p class="footer-desc">The modern, AI-integrated second-hand marketplace and transparent auction platform for smart buyers and verified sellers.</p>
+        </div>
+        <div>
+          <h4 class="footer-title">Marketplace</h4>
+          <ul class="footer-links">
+            <li><a href="/search.html" class="footer-link">Browse All Items</a></li>
+            <li><a href="/search.html?listing_type=auction" class="footer-link">Live Auctions</a></li>
+            <li><a href="/search.html?listing_type=buy_now" class="footer-link">Buy Now Deals</a></li>
+            <li><a href="/seller/create.html" class="footer-link">Sell an Item</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer-title">Account</h4>
+          <ul class="footer-links">
+            <li><a href="/dashboard.html?tab=orders" class="footer-link">Order History</a></li>
+            <li><a href="/dashboard.html?tab=bids" class="footer-link">My Bids</a></li>
+            <li><a href="/wishlist.html" class="footer-link">Wishlist</a></li>
+            <li><a href="/seller.html" class="footer-link">Seller Dashboard</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer-title">Trust & Policies</h4>
+          <ul class="footer-links">
+            <li><a href="/trust-safety.html" class="footer-link">Auction Rules & Cascades</a></li>
+            <li><a href="/trust-safety.html#ai-policy" class="footer-link">AI Usage & Limitations</a></li>
+            <li><a href="/trust-safety.html#disputes" class="footer-link">Disputes & Resolution</a></li>
+            <li><a href="/trust-safety.html#reporting" class="footer-link">Report an Issue</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div>&copy; 2026 Auction Hub. All rights reserved. Built with Python, FastAPI, and Vanilla Web Architecture.</div>
+        <div>Strict Server-Side Bidding &bull; Safe AI-Assisted Commerce</div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script>
+    let isNavAiMode = false;
+    let isHeroAiMode = true;
+
+    function toggleNavAiMode() {
+      isNavAiMode = !isNavAiMode;
+      const btn = document.getElementById('nav-ai-toggle');
+      const input = document.getElementById('nav-search-input');
+      btn.classList.toggle('active', isNavAiMode);
+      input.placeholder = isNavAiMode
+        ? "Ask AI: e.g. 'Laptop with SSD for video editing under ₹60k'"
+        : "Search second-hand phones, laptops, gear...";
+    }
+
+    function toggleHeroAiMode() {
+      isHeroAiMode = !isHeroAiMode;
+      const btn = document.getElementById('hero-ai-toggle');
+      btn.classList.toggle('active', isHeroAiMode);
+    }
+
+    function handleNavSearch(e) {
+      e.preventDefault();
+      const query = document.getElementById('nav-search-input').value.trim();
+      if (!query) return;
+      if (isNavAiMode) {
+        window.location.href = `/search.html?ai_query=${encodeURIComponent(query)}`;
+      } else {
+        window.location.href = `/search.html?q=${encodeURIComponent(query)}`;
+      }
+    }
+
+    function handleHeroSearch(e) {
+      e.preventDefault();
+      const query = document.getElementById('hero-search-input').value.trim();
+      if (!query) return;
+      if (isHeroAiMode) {
+        window.location.href = `/search.html?ai_query=${encodeURIComponent(query)}`;
+      } else {
+        window.location.href = `/search.html?q=${encodeURIComponent(query)}`;
+      }
+    }
+
+    // Load initial listings
+    async function loadHomepageListings() {
+      try {
+        const data = await API.get('/api/products?limit=8');
+        renderHomepageGrids(data.items || []);
+      } catch (err) {
+        // Fallback for initial state before DB is seeded
+        document.getElementById('ending-soon-grid').innerHTML = `
+          <div class="card auction-card" style="padding: 2.5rem; text-align: center; grid-column: 1 / -1;">
+            <p style="color: var(--color-text-muted); font-size: 0.95rem;">No active auctions closing today. Be the first to list one!</p>
+            <a href="/seller/create.html" class="btn btn-accent" style="margin-top: 1rem;">Create an Auction</a>
+          </div>
+        `;
+        document.getElementById('featured-products-grid').innerHTML = `
+          <div class="card" style="padding: 2.5rem; text-align: center; grid-column: 1 / -1;">
+            <p style="color: var(--color-text-muted); font-size: 0.95rem;">No items listed yet. Check back soon or start selling your items.</p>
+            <a href="/seller/create.html" class="btn btn-primary" style="margin-top: 1rem;">Post First Listing</a>
+          </div>
+        `;
+      }
+    }
+
+    function renderHomepageGrids(items) {
+      const auctions = items.filter(p => p.listing_type === 'auction' && p.auction);
+      const buyNows = items.filter(p => p.listing_type === 'buy_now');
+
+      const auctionContainer = document.getElementById('ending-soon-grid');
+      const buyNowContainer = document.getElementById('featured-products-grid');
+
+      if (auctions.length > 0) {
+        auctionContainer.innerHTML = auctions.map(renderAuctionCard).join('');
+      } else {
+        auctionContainer.innerHTML = `
+          <div class="card auction-card" style="padding: 2.5rem; text-align: center; grid-column: 1 / -1;">
+            <p style="color: var(--color-text-muted); font-size: 0.95rem;">No active auctions right now.</p>
+            <a href="/seller/create.html" class="btn btn-accent" style="margin-top: 1rem;">Create an Auction</a>
+          </div>
+        `;
+      }
+
+      if (buyNows.length > 0) {
+        buyNowContainer.innerHTML = buyNows.map(renderProductCard).join('');
+      } else {
+        buyNowContainer.innerHTML = `
+          <div class="card" style="padding: 2.5rem; text-align: center; grid-column: 1 / -1;">
+            <p style="color: var(--color-text-muted); font-size: 0.95rem;">No buy-now items available at the moment.</p>
+            <a href="/seller/create.html" class="btn btn-primary" style="margin-top: 1rem;">Post First Listing</a>
+          </div>
+        `;
+      }
+    }
+
+    function renderAuctionCard(p) {
+      const timeInfo = formatTimeRemaining(p.auction.end_time);
+      const imageSrc = (p.images && p.images[0]?.storage_path) ? p.images[0].storage_path : 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&auto=format&fit=crop&q=80';
+      return `
+        <article class="card auction-card" id="auction-card-${p.id}">
+          <div class="card-image-wrap">
+            <img src="${imageSrc}" alt="${escapeHtml(p.title)}" class="card-image" loading="lazy">
+            <div class="card-badge-container">
+              <span class="badge badge-auction">Auction</span>
+              ${timeInfo.endingSoon ? '<span class="badge badge-ending-soon">Ending Soon</span>' : ''}
+              <span class="badge badge-condition">${escapeHtml(p.condition.replace('_', ' '))}</span>
+            </div>
+            <button class="card-wishlist-btn" onclick="toggleWishlist('${p.id}', event)" aria-label="Add to wishlist">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="card-brand">${escapeHtml(p.brand || 'General')}</div>
+            <h3 class="card-title"><a href="/auctions/${p.auction.id}">${escapeHtml(p.title)}</a></h3>
+            <div class="card-meta">
+              <div class="card-auction-row">
+                <div class="auction-bid-info">
+                  <span class="auction-current-bid">${formatCurrency(p.auction.current_bid || p.auction.starting_bid)}</span>
+                  <span class="auction-bid-count">${p.auction.bid_count} bids</span>
+                </div>
+                <div class="auction-timer">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  <span>${timeInfo.text}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderProductCard(p) {
+      const imageSrc = (p.images && p.images[0]?.storage_path) ? p.images[0].storage_path : 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600&auto=format&fit=crop&q=80';
+      return `
+        <article class="card" id="product-card-${p.id}">
+          <div class="card-image-wrap">
+            <img src="${imageSrc}" alt="${escapeHtml(p.title)}" class="card-image" loading="lazy">
+            <div class="card-badge-container">
+              <span class="badge badge-buy-now">Buy Now</span>
+              <span class="badge badge-condition">${escapeHtml(p.condition.replace('_', ' '))}</span>
+            </div>
+            <button class="card-wishlist-btn" onclick="toggleWishlist('${p.id}', event)" aria-label="Add to wishlist">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="card-brand">${escapeHtml(p.brand || 'General')}</div>
+            <h3 class="card-title"><a href="/products/${p.id}">${escapeHtml(p.title)}</a></h3>
+            <div class="card-meta">
+              <div class="card-price-row">
+                <span class="card-price">${formatCurrency(p.price)}</span>
+                <span class="card-seller-rating">
+                  <span class="rating-star">★</span> ${p.seller_rating ? p.seller_rating.toFixed(1) : '5.0'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    async function toggleWishlist(productId, event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      if (!API.isAuthenticated()) {
+        showToast('Please sign in to save items to your wishlist', 'info');
+        return;
+      }
+      try {
+        await API.post(`/api/wishlist/${productId}`);
+        showToast('Added to wishlist!', 'success');
+      } catch (err) {
+        showToast(err.message || 'Error updating wishlist', 'error');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', loadHomepageListings);
+  </script>
+</body>
+</html>

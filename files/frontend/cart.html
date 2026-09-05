@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shopping Cart — Auction Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    .cart-layout {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 2.5rem;
+      padding: 2.5rem 0 5rem 0;
+    }
+    .cart-item-row {
+      display: flex;
+      gap: 1.25rem;
+      background: #FFFFFF;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      align-items: center;
+    }
+    .cart-item-img {
+      width: 90px;
+      height: 90px;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+      background-color: #F0F0EC;
+    }
+    .summary-card {
+      background: #FFFFFF;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      height: fit-content;
+    }
+    @media (max-width: 768px) {
+      .cart-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header class="navbar">
+    <div class="navbar-container">
+      <a href="/" class="nav-brand">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polygon points="12 6 12 12 16 14"></polygon>
+        </svg>
+        <span>Auction<span class="logo-highlight">Hub</span></span>
+      </a>
+      <a href="/search.html" class="nav-link">&larr; Continue Shopping</a>
+      <div id="nav-auth-container" class="nav-actions"></div>
+    </div>
+  </header>
+
+  <main class="container">
+    <h1 style="font-size: 1.85rem; color: var(--color-primary); margin: 2rem 0 1rem 0;">Shopping Cart</h1>
+
+    <div id="cart-container" class="cart-layout">
+      <!-- Items Column -->
+      <div id="cart-items-column">
+        <div style="padding: 2rem; text-align: center; color: var(--color-text-muted);">Loading cart...</div>
+      </div>
+
+      <!-- Order Summary Column -->
+      <div class="summary-card" id="cart-summary-card" style="display: none;">
+        <h3 style="font-size: 1.15rem; color: var(--color-primary); margin-bottom: 1rem;">Order Summary</h3>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.6rem; font-size: 0.92rem;">
+          <span>Subtotal</span>
+          <strong id="cart-subtotal">₹0</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.6rem; font-size: 0.92rem;">
+          <span>Shipping</span>
+          <span style="color: var(--color-success); font-weight: 600;">FREE</span>
+        </div>
+        <div style="border-top: 1px solid var(--color-border); margin: 1rem 0; padding-top: 1rem; display: flex; justify-content: space-between; font-size: 1.15rem; font-weight: 800; color: var(--color-primary);">
+          <span>Total</span>
+          <span id="cart-total">₹0</span>
+        </div>
+        <button class="btn btn-primary" style="width: 100%; padding: 0.85rem; font-size: 1rem;" onclick="proceedToCheckout()">
+          Proceed to Checkout &rarr;
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script>
+    let cartProducts = [];
+
+    async function loadCart() {
+      const cartIds = JSON.parse(localStorage.getItem('auction_hub_cart') || '[]');
+      const container = document.getElementById('cart-items-column');
+      const summary = document.getElementById('cart-summary-card');
+
+      if (cartIds.length === 0) {
+        container.innerHTML = `
+          <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 4rem 2rem; text-align: center;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-light)" stroke-width="1.5" style="margin-bottom: 1rem;"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+            <h3 style="font-size: 1.25rem; color: var(--color-primary); margin-bottom: 0.5rem;">Your Cart is Empty</h3>
+            <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">Explore second-hand tech and buy items directly at fixed prices.</p>
+            <a href="/search.html" class="btn btn-primary">Start Browsing</a>
+          </div>
+        `;
+        summary.style.display = 'none';
+        return;
+      }
+
+      try {
+        cartProducts = [];
+        for (const id of cartIds) {
+          try {
+            const p = await API.get(`/api/products/${id}`);
+            if (p.listing_status === 'published') {
+              cartProducts.push(p);
+            }
+          } catch (e) {}
+        }
+
+        if (cartProducts.length === 0) {
+          localStorage.setItem('auction_hub_cart', '[]');
+          loadCart();
+          return;
+        }
+
+        container.innerHTML = cartProducts.map(p => {
+          const img = (p.images && p.images[0]) ? p.images[0].storage_path : 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=300';
+          return `
+            <div class="cart-item-row" id="cart-item-${p.id}">
+              <img src="${img}" alt="${escapeHtml(p.title)}" class="cart-item-img">
+              <div style="flex: 1;">
+                <div style="font-size: 0.78rem; color: var(--color-text-muted); text-transform: uppercase; font-weight: 700;">${escapeHtml(p.brand || 'Item')}</div>
+                <h4 style="font-size: 1.05rem; color: var(--color-primary); margin: 0.2rem 0;"><a href="/product.html?id=${p.id}">${escapeHtml(p.title)}</a></h4>
+                <div style="font-size: 0.85rem; color: var(--color-text-muted);">Condition: <strong>${escapeHtml(p.condition.replace('_', ' '))}</strong></div>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary); margin-bottom: 0.5rem;">${formatCurrency(p.price)}</div>
+                <button onclick="removeFromCart('${p.id}')" style="font-size: 0.82rem; color: var(--color-error); font-weight: 600;">Remove</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        const total = cartProducts.reduce((sum, p) => sum + Number(p.price || 0), 0);
+        document.getElementById('cart-subtotal').textContent = formatCurrency(total);
+        document.getElementById('cart-total').textContent = formatCurrency(total);
+        summary.style.display = 'block';
+
+      } catch (err) {
+        showToast('Error loading cart items', 'error');
+      }
+    }
+
+    function removeFromCart(id) {
+      let cart = JSON.parse(localStorage.getItem('auction_hub_cart') || '[]');
+      cart = cart.filter(itemId => itemId !== id);
+      localStorage.setItem('auction_hub_cart', JSON.stringify(cart));
+      showToast('Item removed from cart', 'info');
+      loadCart();
+    }
+
+    function proceedToCheckout() {
+      if (!API.isAuthenticated()) {
+        showToast('Please sign in to complete your checkout', 'info');
+        setTimeout(() => window.location.href = '/login.html?redirect=/checkout.html', 500);
+        return;
+      }
+      window.location.href = '/checkout.html';
+    }
+
+    window.addEventListener('DOMContentLoaded', loadCart);
+  </script>
+</body>
+</html>

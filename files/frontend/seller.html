@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seller Dashboard — Auction Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    .seller-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+      margin: 2rem 0;
+    }
+    .stat-card {
+      background: #FFFFFF;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+    }
+    .stat-val {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--color-primary);
+      margin-top: 0.25rem;
+    }
+    .dash-tabs {
+      display: flex;
+      gap: 1.5rem;
+      border-bottom: 2px solid var(--color-border);
+      margin: 2rem 0 1.5rem 0;
+    }
+    .dash-tab-btn {
+      padding: 0.6rem 0.2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      cursor: pointer;
+    }
+    .dash-tab-btn.active {
+      color: var(--color-primary);
+      border-bottom-color: var(--color-accent);
+    }
+    .order-row {
+      background: #FFFFFF;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header class="navbar">
+    <div class="navbar-container">
+      <a href="/" class="nav-brand">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polygon points="12 6 12 12 16 14"></polygon>
+        </svg>
+        <span>Auction<span class="logo-highlight">Hub</span></span>
+      </a>
+      <a href="/seller/create.html" class="btn-sell">+ Create New Listing</a>
+      <div id="nav-auth-container" class="nav-actions"></div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 2rem;">
+      <div>
+        <h1 style="font-size: 1.85rem; color: var(--color-primary);">Seller Management Hub</h1>
+        <p style="color: var(--color-text-muted); font-size: 0.95rem;">Manage active inventory, fulfill incoming buyer orders, and track revenue.</p>
+      </div>
+      <a href="/seller/create.html" class="btn btn-primary">+ Post New Listing</a>
+    </div>
+
+    <!-- Overview Stats -->
+    <div class="seller-stats-grid">
+      <div class="stat-card">
+        <div style="font-size: 0.82rem; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase;">Total Items Sold</div>
+        <div class="stat-val" id="stat-total-sales">0</div>
+      </div>
+      <div class="stat-card">
+        <div style="font-size: 0.82rem; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase;">Seller Rating</div>
+        <div class="stat-val" style="color: #F59E0B;">★ <span id="stat-rating">5.0</span></div>
+      </div>
+      <div class="stat-card">
+        <div style="font-size: 0.82rem; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase;">Incoming Orders</div>
+        <div class="stat-val" id="stat-pending-orders">0</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="dash-tabs">
+      <button class="dash-tab-btn active" id="tab-btn-orders" onclick="switchSellerTab('orders')">Orders to Fulfill</button>
+      <button class="dash-tab-btn" id="tab-btn-listings" onclick="switchSellerTab('listings')">My Listings</button>
+    </div>
+
+    <!-- Orders Tab -->
+    <section id="seller-orders-section">
+      <div id="seller-orders-list">
+        <div style="padding: 3rem; text-align: center; color: var(--color-text-muted);">Loading incoming orders...</div>
+      </div>
+    </section>
+
+    <!-- Listings Tab -->
+    <section id="seller-listings-section" style="display: none;">
+      <div id="seller-listings-grid" class="product-grid">
+        <div style="grid-column: 1 / -1; padding: 3rem; text-align: center; color: var(--color-text-muted);">Loading your listings...</div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script>
+    if (!API.isAuthenticated()) {
+      window.location.href = '/login.html?redirect=/seller.html';
+    }
+
+    function switchSellerTab(tab) {
+      document.querySelectorAll('.dash-tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('seller-orders-section').style.display = tab === 'orders' ? 'block' : 'none';
+      document.getElementById('seller-listings-section').style.display = tab === 'listings' ? 'block' : 'none';
+      document.getElementById(`tab-btn-${tab}`).classList.add('active');
+
+      if (tab === 'orders') loadSellerOrders();
+      if (tab === 'listings') loadSellerListings();
+    }
+
+    async function loadSellerStats() {
+      const user = API.getUser();
+      if (user && user.seller_profile) {
+        document.getElementById('stat-total-sales').textContent = user.seller_profile.total_sales || 0;
+        document.getElementById('stat-rating').textContent = Number(user.avg_rating || 5.0).toFixed(1);
+      }
+    }
+
+    async function loadSellerOrders() {
+      const container = document.getElementById('seller-orders-list');
+      try {
+        const orders = await API.get('/api/seller/orders');
+        document.getElementById('stat-pending-orders').textContent = orders.filter(o => o.order_status !== 'completed' && o.order_status !== 'cancelled').length;
+
+        if (orders.length === 0) {
+          container.innerHTML = `
+            <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 4rem 2rem; text-align: center;">
+              <h3 style="font-size: 1.25rem; color: var(--color-primary); margin-bottom: 0.5rem;">No Incoming Orders</h3>
+              <p style="color: var(--color-text-muted);">When buyers purchase your items, order fulfillment details and actions will appear here.</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = orders.map(renderSellerOrderRow).join('');
+      } catch (err) {
+        container.innerHTML = `<div style="color: var(--color-error); padding: 2rem;">Error: ${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    function renderSellerOrderRow(order) {
+      const statusActions = {
+        'placed': `<button class="btn btn-primary" style="padding: 0.4rem 0.85rem; font-size: 0.85rem;" onclick="updateStatus('${order.id}', 'processing')">Mark Processing</button>`,
+        'processing': `<button class="btn btn-accent" style="padding: 0.4rem 0.85rem; font-size: 0.85rem;" onclick="updateStatus('${order.id}', 'shipped')">Mark as Shipped</button>`,
+        'shipped': `<button class="btn btn-outline" style="padding: 0.4rem 0.85rem; font-size: 0.85rem; color: var(--color-success); border-color: var(--color-success);" onclick="updateStatus('${order.id}', 'completed')">Mark Completed & Delivered</button>`,
+        'completed': `<span style="color: var(--color-success); font-weight: 700; font-size: 0.88rem;">✓ Order Completed</span>`,
+        'cancelled': `<span style="color: var(--color-error); font-weight: 700; font-size: 0.88rem;">Cancelled</span>`
+      };
+
+      return `
+        <div class="order-row" id="seller-order-${order.id}">
+          <div>
+            <span style="font-size: 0.8rem; color: var(--color-text-muted);">Order #${order.id.slice(0, 8)}</span>
+            <div style="font-weight: 700; font-size: 1.1rem; color: var(--color-primary); margin-top: 0.2rem;">
+              ${formatCurrency(order.total_amount)}
+            </div>
+            <div style="font-size: 0.85rem; color: var(--color-text-muted); margin-top: 0.35rem;">
+              Status: <strong style="text-transform: capitalize; color: var(--color-primary);">${order.order_status}</strong>
+            </div>
+          </div>
+          <div>
+            ${statusActions[order.order_status] || ''}
+          </div>
+        </div>
+      `;
+    }
+
+    async function updateStatus(orderId, newStatus) {
+      try {
+        await API.put(`/api/orders/${orderId}/status`, { order_status: newStatus });
+        showToast(`Order updated to: ${newStatus}`, 'success');
+        loadSellerOrders();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function loadSellerListings() {
+      const container = document.getElementById('seller-listings-grid');
+      const user = API.getUser();
+      if (!user) return;
+
+      try {
+        const res = await API.get('/api/products', { seller_id: user.id, listing_status: '' });
+        const items = res.items || [];
+        if (items.length === 0) {
+          container.innerHTML = `
+            <div style="grid-column: 1 / -1; background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 3rem 2rem; text-align: center;">
+              <p style="color: var(--color-text-muted); margin-bottom: 1rem;">You haven't listed any items yet.</p>
+              <a href="/seller/create.html" class="btn btn-primary">+ Create Your First Listing</a>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = items.map(p => `
+          <div class="card" id="seller-prod-${p.id}">
+            <div class="card-body">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span class="badge ${p.listing_type === 'auction' ? 'badge-auction' : 'badge-buy-now'}">${p.listing_type}</span>
+                <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--color-text-muted);">${p.listing_status}</span>
+              </div>
+              <h3 class="card-title"><a href="/product.html?id=${p.id}">${escapeHtml(p.title)}</a></h3>
+              <div style="font-weight: 700; font-size: 1.15rem; margin: 0.5rem 0;">${formatCurrency(p.price || p.auction?.starting_bid)}</div>
+              <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                ${p.listing_status === 'published' ? `
+                  <button class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.78rem;" onclick="pauseListing('${p.id}')">Pause</button>
+                  <button class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.78rem;" onclick="archiveListing('${p.id}')">Archive</button>
+                ` : p.listing_status === 'paused' ? `
+                  <button class="btn btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.78rem;" onclick="publishListing('${p.id}')">Resume / Publish</button>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        container.innerHTML = `<div style="grid-column: 1 / -1; color: var(--color-error);">Error loading listings</div>`;
+      }
+    }
+
+    async function pauseListing(id) {
+      await API.post(`/api/products/${id}/pause`);
+      showToast('Listing paused', 'info');
+      loadSellerListings();
+    }
+
+    async function publishListing(id) {
+      await API.post(`/api/products/${id}/publish`);
+      showToast('Listing published', 'success');
+      loadSellerListings();
+    }
+
+    async function archiveListing(id) {
+      await API.post(`/api/products/${id}/archive`);
+      showToast('Listing archived', 'info');
+      loadSellerListings();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSellerStats();
+      loadSellerOrders();
+    });
+  </script>
+</body>
+</html>

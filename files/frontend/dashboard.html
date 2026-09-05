@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buyer Dashboard — Auction Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    .dash-tabs {
+      display: flex;
+      gap: 1.5rem;
+      border-bottom: 2px solid var(--color-border);
+      margin: 2rem 0 1.5rem 0;
+    }
+    .dash-tab-btn {
+      padding: 0.6rem 0.2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      cursor: pointer;
+    }
+    .dash-tab-btn.active {
+      color: var(--color-primary);
+      border-bottom-color: var(--color-accent);
+    }
+    .order-card {
+      background: #FFFFFF;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--color-border);
+      padding-bottom: 0.85rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .status-tracker {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 1.25rem 0;
+      padding: 0.75rem 1rem;
+      background: var(--color-surface-hover);
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+    }
+    .tracker-step {
+      font-weight: 600;
+      color: var(--color-text-light);
+    }
+    .tracker-step.completed {
+      color: var(--color-success);
+    }
+    .tracker-step.current {
+      color: var(--color-primary);
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header class="navbar">
+    <div class="navbar-container">
+      <a href="/" class="nav-brand">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polygon points="12 6 12 12 16 14"></polygon>
+        </svg>
+        <span>Auction<span class="logo-highlight">Hub</span></span>
+      </a>
+      <a href="/search.html" class="nav-link">Browse Marketplace</a>
+      <div id="nav-auth-container" class="nav-actions"></div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div style="margin-top: 2rem;">
+      <h1 style="font-size: 1.85rem; color: var(--color-primary);">Buyer Dashboard</h1>
+      <p style="color: var(--color-text-muted); font-size: 0.95rem;">Track your purchases, live auction bids, and order updates.</p>
+    </div>
+
+    <!-- Tabs Bar -->
+    <div class="dash-tabs">
+      <button class="dash-tab-btn active" id="tab-btn-orders" onclick="switchTab('orders')">My Orders</button>
+      <button class="dash-tab-btn" id="tab-btn-bids" onclick="switchTab('bids')">Auction Bids</button>
+      <button class="dash-tab-btn" id="tab-btn-wishlist" onclick="switchTab('wishlist')">Wishlist</button>
+    </div>
+
+    <!-- Orders Tab -->
+    <section id="dash-orders-section">
+      <div id="orders-list-container">
+        <div style="padding: 3rem; text-align: center; color: var(--color-text-muted);">Loading your order history...</div>
+      </div>
+    </section>
+
+    <!-- Bids Tab -->
+    <section id="dash-bids-section" style="display: none;">
+      <div id="bids-list-container">
+        <div style="padding: 3rem; text-align: center; color: var(--color-text-muted);">Loading your active and historical bids...</div>
+      </div>
+    </section>
+
+    <!-- Wishlist Tab -->
+    <section id="dash-wishlist-section" style="display: none;">
+      <div class="product-grid" id="wishlist-grid">
+        <div style="grid-column: 1 / -1; padding: 3rem; text-align: center; color: var(--color-text-muted);">Loading saved items...</div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script>
+    if (!API.isAuthenticated()) {
+      window.location.href = '/login.html?redirect=/dashboard.html';
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.dash-tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('dash-orders-section').style.display = tab === 'orders' ? 'block' : 'none';
+      document.getElementById('dash-bids-section').style.display = tab === 'bids' ? 'block' : 'none';
+      document.getElementById('dash-wishlist-section').style.display = tab === 'wishlist' ? 'block' : 'none';
+      document.getElementById(`tab-btn-${tab}`).classList.add('active');
+
+      if (tab === 'orders') loadOrders();
+      if (tab === 'bids') loadBids();
+      if (tab === 'wishlist') loadWishlist();
+    }
+
+    async function loadOrders() {
+      const container = document.getElementById('orders-list-container');
+      try {
+        const orders = await API.get('/api/orders');
+        if (orders.length === 0) {
+          container.innerHTML = `
+            <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 4rem 2rem; text-align: center;">
+              <h3 style="font-size: 1.25rem; color: var(--color-primary); margin-bottom: 0.5rem;">No Orders Placed Yet</h3>
+              <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">When you buy items or win auctions, your order status will be tracked here.</p>
+              <a href="/search.html" class="btn btn-primary">Find Great Deals</a>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = orders.map(renderOrderCard).join('');
+      } catch (err) {
+        container.innerHTML = `<div style="color: var(--color-error); padding: 2rem;">Error: ${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    function renderOrderCard(order) {
+      const dateStr = new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+      const statusMap = {
+        'placed': { label: 'Placed', step: 1 },
+        'processing': { label: 'Processing', step: 2 },
+        'shipped': { label: 'Shipped', step: 3 },
+        'completed': { label: 'Delivered', step: 4 },
+        'cancelled': { label: 'Cancelled', step: 0 }
+      };
+      const curStep = statusMap[order.order_status]?.step || 1;
+
+      return `
+        <article class="order-card" id="order-${order.id}">
+          <div class="order-header">
+            <div>
+              <span style="font-size: 0.8rem; color: var(--color-text-muted); text-transform: uppercase;">Order #</span>
+              <strong style="font-size: 1rem; color: var(--color-primary);">${order.id.slice(0, 8)}</strong>
+              <span style="font-size: 0.85rem; color: var(--color-text-muted); margin-left: 0.75rem;">Placed on ${dateStr}</span>
+            </div>
+            <div>
+              <span style="font-size: 1.15rem; font-weight: 800; color: var(--color-primary);">${formatCurrency(order.total_amount)}</span>
+            </div>
+          </div>
+
+          <!-- Status tracker linear bar -->
+          <div class="status-tracker">
+            <span class="tracker-step ${curStep >= 1 ? 'completed' : ''} ${curStep === 1 ? 'current' : ''}">1. Placed</span> &rarr;
+            <span class="tracker-step ${curStep >= 2 ? 'completed' : ''} ${curStep === 2 ? 'current' : ''}">2. Processing</span> &rarr;
+            <span class="tracker-step ${curStep >= 3 ? 'completed' : ''} ${curStep === 3 ? 'current' : ''}">3. Shipped</span> &rarr;
+            <span class="tracker-step ${curStep >= 4 ? 'completed' : ''} ${curStep === 4 ? 'current' : ''}">4. Completed</span>
+          </div>
+
+          <div style="margin: 1rem 0;">
+            ${order.items.map(item => `
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--color-surface-hover);">
+                <div>
+                  <a href="/product.html?id=${item.product_id}" style="font-weight: 600; color: var(--color-primary);">View Purchased Product</a>
+                </div>
+                <strong>${formatCurrency(item.price)}</strong>
+              </div>
+            `).join('')}
+          </div>
+
+          ${order.order_status === 'completed' ? `
+            <div style="text-align: right; margin-top: 0.75rem;">
+              <button class="btn btn-outline" style="font-size: 0.85rem;" onclick="promptReview('${order.id}', '${order.items[0]?.product_id}', '${order.items[0]?.seller_id}')">
+                ★ Leave Seller Review
+              </button>
+            </div>
+          ` : ''}
+        </article>
+      `;
+    }
+
+    async function loadBids() {
+      const container = document.getElementById('bids-list-container');
+      container.innerHTML = `
+        <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 3rem 2rem; text-align: center;">
+          <h3 style="font-size: 1.15rem; color: var(--color-primary); margin-bottom: 0.5rem;">Live Auctions Activity</h3>
+          <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">Participate in competitive live auctions to secure second-hand tech at your price.</p>
+          <a href="/search.html?listing_type=auction" class="btn btn-accent">Explore Live Auctions</a>
+        </div>
+      `;
+    }
+
+    async function loadWishlist() {
+      const container = document.getElementById('wishlist-grid');
+      container.innerHTML = `
+        <div style="grid-column: 1 / -1; background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 3rem 2rem; text-align: center;">
+          <h3 style="font-size: 1.15rem; color: var(--color-primary); margin-bottom: 0.5rem;">Wishlist Items</h3>
+          <p style="color: var(--color-text-muted);">Save interesting products and auctions to easily find them later.</p>
+        </div>
+      `;
+    }
+
+    function promptReview(orderId, productId, sellerId) {
+      const rating = prompt("Rate this purchase (1 to 5 stars):", "5");
+      if (!rating) return;
+      const comment = prompt("Write an optional review comment:", "Excellent condition as described!");
+      
+      API.post('/api/reviews', {
+        order_id: orderId,
+        product_id: productId,
+        seller_id: sellerId,
+        rating: parseInt(rating),
+        comment: comment || null
+      }).then(() => showToast('Review submitted! Thank you.', 'success'))
+        .catch(err => showToast(err.message, 'error'));
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const initialTab = params.get('tab') || 'orders';
+      switchTab(initialTab);
+    });
+  </script>
+</body>
+</html>

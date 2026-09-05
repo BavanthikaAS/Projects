@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout — Auction Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    .checkout-layout {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 2.5rem;
+      padding: 2.5rem 0 5rem 0;
+    }
+    .checkout-section {
+      background: #FFFFFF;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 1.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .checkout-title {
+      font-size: 1.2rem;
+      color: var(--color-primary);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .payment-option {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+    }
+    .payment-option.active {
+      border-color: var(--color-primary);
+      background-color: var(--color-surface-hover);
+    }
+    @media (max-width: 768px) {
+      .checkout-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header class="navbar">
+    <div class="navbar-container">
+      <a href="/" class="nav-brand">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polygon points="12 6 12 12 16 14"></polygon>
+        </svg>
+        <span>Auction<span class="logo-highlight">Hub</span></span>
+      </a>
+      <span style="color: #CBD5E1; font-size: 0.9rem;">🔒 Secure 256-bit Encrypted Checkout</span>
+    </div>
+  </header>
+
+  <main class="container">
+    <h1 style="font-size: 1.85rem; color: var(--color-primary); margin: 2rem 0 1rem 0;">Complete Your Purchase</h1>
+
+    <div class="checkout-layout">
+      <!-- Left Column: Shipping & Payment Details -->
+      <div>
+        <div class="checkout-section">
+          <h2 class="checkout-title">1. Shipping & Contact Info</h2>
+          <div class="form-group">
+            <label class="form-label">Full Recipient Name <span class="req">*</span></label>
+            <input type="text" id="ship-name" class="form-control" placeholder="e.g. Rahul Sharma" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Delivery Street Address <span class="req">*</span></label>
+            <input type="text" id="ship-address" class="form-control" placeholder="Flat / House No, Landmark, Street" required>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">City <span class="req">*</span></label>
+              <input type="text" id="ship-city" class="form-control" placeholder="e.g. Bangalore" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">PIN / Postal Code <span class="req">*</span></label>
+              <input type="text" id="ship-pin" class="form-control" placeholder="560001" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="checkout-section">
+          <h2 class="checkout-title">2. Payment Method</h2>
+          
+          <label class="payment-option active">
+            <input type="radio" name="pay_method" value="mock_card" checked>
+            <div>
+              <strong>Credit / Debit Card (Mock Gateway)</strong>
+              <div style="font-size: 0.8rem; color: var(--color-text-muted);">Simulated instant payment with test card</div>
+            </div>
+          </label>
+
+          <label class="payment-option">
+            <input type="radio" name="pay_method" value="mock_upi">
+            <div>
+              <strong>UPI (GPay / PhonePe / Paytm Mock)</strong>
+              <div style="font-size: 0.8rem; color: var(--color-text-muted);">Simulated UPI authorization</div>
+            </div>
+          </label>
+
+          <!-- Mock testing toggle -->
+          <div style="margin-top: 1rem; padding: 0.75rem; background: var(--color-surface-hover); border-radius: var(--radius-sm); border: 1px dashed var(--color-border-dark);">
+            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; cursor: pointer; color: var(--color-text-muted);">
+              <input type="checkbox" id="simulate-fail-cb">
+              <span>[Test Mode] Simulate Payment Decline / Failure</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Order Review & Pay -->
+      <div>
+        <div class="checkout-section">
+          <h2 class="checkout-title">Order Items</h2>
+          <div id="checkout-items-list" style="margin-bottom: 1.5rem;">
+            <!-- Rendered by JS -->
+          </div>
+
+          <div style="border-top: 1px solid var(--color-border); padding-top: 1rem; margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.92rem;">
+              <span>Subtotal</span>
+              <strong id="checkout-subtotal">₹0</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.92rem;">
+              <span>Shipping & Handling</span>
+              <span style="color: var(--color-success); font-weight: 600;">FREE</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: 800; color: var(--color-primary); margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--color-border);">
+              <span>Grand Total</span>
+              <span id="checkout-total">₹0</span>
+            </div>
+          </div>
+
+          <button id="pay-btn" class="btn btn-primary" style="width: 100%; padding: 0.9rem; font-size: 1.05rem;" onclick="submitCheckout()">
+            Authorize & Place Order
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script>
+    if (!API.isAuthenticated()) {
+      showToast('Please sign in to proceed with checkout', 'info');
+      setTimeout(() => window.location.href = `/login.html?redirect=${encodeURIComponent(window.location.href)}`, 500);
+    }
+
+    let checkoutItems = [];
+
+    async function initCheckout() {
+      const user = API.getUser();
+      if (user) {
+        document.getElementById('ship-name').value = user.full_name || '';
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      const singleProductId = params.get('product_id');
+
+      if (singleProductId) {
+        try {
+          const p = await API.get(`/api/products/${singleProductId}`);
+          checkoutItems = [p];
+        } catch (e) {
+          showToast('Product not found', 'error');
+        }
+      } else {
+        const cartIds = JSON.parse(localStorage.getItem('auction_hub_cart') || '[]');
+        for (const id of cartIds) {
+          try {
+            const p = await API.get(`/api/products/${id}`);
+            if (p.listing_status === 'published') {
+              checkoutItems.push(p);
+            }
+          } catch (e) {}
+        }
+      }
+
+      if (checkoutItems.length === 0) {
+        showToast('No valid items for checkout', 'warning');
+        setTimeout(() => window.location.href = '/cart.html', 800);
+        return;
+      }
+
+      const listContainer = document.getElementById('checkout-items-list');
+      listContainer.innerHTML = checkoutItems.map(p => `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; font-size: 0.92rem;">
+          <div>
+            <strong>${escapeHtml(p.title)}</strong>
+            <div style="font-size: 0.8rem; color: var(--color-text-muted);">${escapeHtml(p.condition.replace('_', ' '))} &bull; ${escapeHtml(p.brand || '')}</div>
+          </div>
+          <span style="font-weight: 700;">${formatCurrency(p.price)}</span>
+        </div>
+      `).join('');
+
+      const total = checkoutItems.reduce((sum, p) => sum + Number(p.price || 0), 0);
+      document.getElementById('checkout-subtotal').textContent = formatCurrency(total);
+      document.getElementById('checkout-total').textContent = formatCurrency(total);
+    }
+
+    async function submitCheckout() {
+      const name = document.getElementById('ship-name').value.trim();
+      const addr = document.getElementById('ship-address').value.trim();
+      const city = document.getElementById('ship-city').value.trim();
+      const pin = document.getElementById('ship-pin').value.trim();
+
+      if (!name || !addr || !city || !pin) {
+        showToast('Please fill out all required shipping fields', 'warning');
+        return;
+      }
+
+      const method = document.querySelector('input[name="pay_method"]:checked')?.value || 'mock_card';
+      const simulateFailure = document.getElementById('simulate-fail-cb').checked;
+      const btn = document.getElementById('pay-btn');
+
+      btn.disabled = true;
+      btn.textContent = 'Processing Payment...';
+
+      try {
+        const order = await API.post('/api/orders', {
+          items: checkoutItems.map(p => ({ product_id: p.id })),
+          payment_method: method,
+          simulate_failure: simulateFailure
+        });
+
+        // Clear local cart
+        localStorage.removeItem('auction_hub_cart');
+
+        showToast('Payment confirmed! Order successfully placed.', 'success');
+        setTimeout(() => {
+          window.location.href = `/dashboard.html?tab=orders&new_order=${order.id}`;
+        }, 800);
+
+      } catch (err) {
+        showToast(err.message || 'Payment failed. Please retry.', 'error');
+        btn.disabled = false;
+        btn.textContent = 'Authorize & Place Order';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', initCheckout);
+  </script>
+</body>
+</html>

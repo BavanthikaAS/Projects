@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Auction Room — Auction Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    .auction-room-layout {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 3rem;
+      padding: 2.5rem 0 5rem 0;
+    }
+    .bidding-box {
+      background: #FFFFFF;
+      border: 2px solid var(--color-accent-border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      box-shadow: var(--shadow-accent);
+    }
+    .current-bid-display {
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: #B47D1C;
+      line-height: 1;
+      margin: 0.5rem 0;
+    }
+    .bid-history-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      font-size: 0.88rem;
+    }
+    .bid-history-table th {
+      text-align: left;
+      padding: 0.6rem 0.75rem;
+      background-color: var(--color-surface-hover);
+      color: var(--color-text-muted);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .bid-history-table td {
+      padding: 0.65rem 0.75rem;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .bid-history-table tr:first-child td {
+      font-weight: 700;
+      background-color: var(--color-accent-light);
+    }
+    .highest-bidder-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background-color: #ECFDF5;
+      color: #065F46;
+      border: 1px solid #A7F3D0;
+      padding: 0.35rem 0.75rem;
+      border-radius: var(--radius-full);
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 860px) {
+      .auction-room-layout {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header class="navbar">
+    <div class="navbar-container">
+      <a href="/" class="nav-brand">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polygon points="12 6 12 12 16 14"></polygon>
+        </svg>
+        <span>Auction<span class="logo-highlight">Hub</span></span>
+      </a>
+      <a href="/search.html?listing_type=auction" class="nav-link">&larr; Back to Auctions</a>
+      <div id="nav-auth-container" class="nav-actions"></div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="auction-loading" style="padding: 4rem; text-align: center; color: var(--color-text-muted);">
+      Connecting to live auction room...
+    </div>
+
+    <div id="auction-content" class="auction-room-layout" style="display: none;">
+      
+      <!-- Left Column: Item Overview & Specs -->
+      <div>
+        <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem;">
+            <span class="badge badge-auction">⚡ Live Auction</span>
+            <span id="auction-condition-badge" class="badge badge-condition"></span>
+          </div>
+          <h1 id="auction-product-title" style="font-size: 1.65rem; color: var(--color-primary); margin-bottom: 0.5rem;"></h1>
+          
+          <div style="width: 100%; height: 320px; background: #F5F5F3; border-radius: var(--radius-md); overflow: hidden; display: flex; align-items: center; justify-content: center; margin: 1rem 0;">
+            <img id="auction-main-img" src="" alt="Auction Item" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+          </div>
+
+          <h3 style="font-size: 1rem; color: var(--color-primary); margin-bottom: 0.4rem;">Seller Description</h3>
+          <p id="auction-description" style="font-size: 0.9rem; color: var(--color-text-main); line-height: 1.5; white-space: pre-line;"></p>
+        </div>
+
+        <!-- AI Auction Assistant Panel (Phase 23 Hook) -->
+        <div class="ai-panel" id="ai-auction-assistant-panel" style="display: none;">
+          <div class="ai-panel-header">
+            <span class="ai-badge">AI Auction Assistant</span>
+            <span style="font-size: 0.8rem; color: var(--color-text-muted);">Objective factor summary</span>
+          </div>
+          <div id="ai-auction-analysis" style="font-size: 0.88rem; line-height: 1.5;"></div>
+          <div class="ai-disclaimer">AI summarizes marketplace signals for consideration — AI never places bids or guarantees pricing.</div>
+        </div>
+      </div>
+
+      <!-- Right Column: Live Bid Controls & Bid History -->
+      <div>
+        <div class="bidding-box">
+          
+          <!-- Winning indicator -->
+          <div id="winning-banner" class="highest-bidder-badge" style="display: none;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>You are currently the highest bidder!</span>
+          </div>
+
+          <!-- Countdown -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <span style="font-size: 0.85rem; color: var(--color-text-muted); font-weight: 600;">TIME REMAINING</span>
+            <div id="live-timer-badge" class="auction-timer" style="font-size: 0.95rem; padding: 0.35rem 0.75rem;">
+              --:--
+            </div>
+          </div>
+
+          <!-- Current Bid -->
+          <div style="font-size: 0.85rem; color: #9A6C17; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Current Bid</div>
+          <div class="current-bid-display" id="current-bid-val">₹0</div>
+          
+          <div style="font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: 1.5rem;">
+            Minimum next bid: <strong id="min-next-bid-val" style="color: var(--color-primary);">₹0</strong>
+            &bull; <span id="total-bids-count">0 bids</span>
+          </div>
+
+          <!-- Bid Form -->
+          <form id="place-bid-form" onsubmit="handlePlaceBid(event)">
+            <div class="form-group">
+              <label class="form-label" for="bid-amount-input">Your Bid Amount (₹)</label>
+              <input type="number" id="bid-amount-input" class="form-control" style="font-size: 1.15rem; font-weight: 700; padding: 0.75rem;" min="1" step="1" required>
+            </div>
+            <button type="submit" id="place-bid-btn" class="btn btn-accent" style="width: 100%; padding: 0.9rem; font-size: 1.1rem; font-weight: 800;">
+              Place Bid Now
+            </button>
+          </form>
+
+          <div id="bid-error-msg" style="display: none; color: var(--color-error); font-size: 0.85rem; margin-top: 0.75rem; text-align: center;"></div>
+        </div>
+
+        <!-- Bid History -->
+        <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.5rem; margin-top: 1.5rem;">
+          <h3 style="font-size: 1.05rem; color: var(--color-primary); margin-bottom: 0.5rem;">Live Bid Activity</h3>
+          <table class="bid-history-table">
+            <thead>
+              <tr>
+                <th>Bidder</th>
+                <th>Bid Amount</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody id="bid-history-tbody">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script>
+    let currentAuction = null;
+    let pollInterval = null;
+
+    async function loadAuctionData() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      if (!id) {
+        window.location.href = '/search.html?listing_type=auction';
+        return;
+      }
+
+      try {
+        currentAuction = await API.get(`/api/auctions/${id}`);
+        renderAuction(currentAuction);
+      } catch (err) {
+        document.getElementById('auction-loading').innerHTML = `
+          <h3>Auction Not Found</h3>
+          <p>${escapeHtml(err.message)}</p>
+          <a href="/search.html?listing_type=auction" class="btn btn-primary" style="margin-top: 1rem;">Back to Live Auctions</a>
+        `;
+      }
+    }
+
+    function renderAuction(a) {
+      document.getElementById('auction-loading').style.display = 'none';
+      document.getElementById('auction-content').style.display = 'grid';
+
+      if (a.product) {
+        document.title = `${a.product.title} — Live Bidding`;
+        document.getElementById('auction-product-title').textContent = a.product.title;
+        document.getElementById('auction-description').textContent = a.product.description;
+        document.getElementById('auction-condition-badge').textContent = a.product.condition.replace('_', ' ');
+
+        const defaultImg = 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&auto=format&fit=crop&q=80';
+        const img = (a.product.images && a.product.images[0]) ? a.product.images[0].storage_path : defaultImg;
+        document.getElementById('auction-main-img').src = img;
+      }
+
+      // Bid displays
+      const curBid = a.current_bid || a.starting_bid;
+      document.getElementById('current-bid-val').textContent = formatCurrency(curBid);
+      document.getElementById('min-next-bid-val').textContent = formatCurrency(a.min_next_bid);
+      document.getElementById('total-bids-count').textContent = `${a.bid_count} bids`;
+      
+      const bidInput = document.getElementById('bid-amount-input');
+      if (!bidInput.value || Number(bidInput.value) < Number(a.min_next_bid)) {
+        bidInput.value = Number(a.min_next_bid);
+        bidInput.min = Number(a.min_next_bid);
+      }
+
+      // Countdown
+      const timeInfo = formatTimeRemaining(a.end_time);
+      const timerBadge = document.getElementById('live-timer-badge');
+      timerBadge.textContent = timeInfo.text;
+
+      // Check winning status
+      const user = API.getUser();
+      const isWinner = user && a.current_highest_bidder_id === user.id;
+      const winningBanner = document.getElementById('winning-banner');
+      if (isWinner && a.auction_status === 'active') {
+        winningBanner.style.display = 'inline-flex';
+      } else {
+        winningBanner.style.display = 'none';
+      }
+
+      // Button state
+      const bidBtn = document.getElementById('place-bid-btn');
+      if (a.auction_status !== 'active' || timeInfo.expired) {
+        bidBtn.disabled = true;
+        bidBtn.textContent = 'Auction Closed';
+      } else if (user && a.product && a.product.seller_id === user.id) {
+        bidBtn.disabled = true;
+        bidBtn.textContent = 'Sellers Cannot Bid on Own Auction';
+      } else if (isWinner) {
+        bidBtn.disabled = true;
+        bidBtn.textContent = 'You Are Highest Bidder';
+      } else {
+        bidBtn.disabled = false;
+        bidBtn.textContent = 'Place Bid Now';
+      }
+
+      // History
+      const tbody = document.getElementById('bid-history-tbody');
+      if (!a.bids || a.bids.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--color-text-muted);">No bids yet. Be the first to bid!</td></tr>`;
+      } else {
+        tbody.innerHTML = a.bids.map((b, idx) => {
+          const time = new Date(b.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          return `
+            <tr>
+              <td>${escapeHtml(b.bidder_masked_name)} ${idx === 0 ? '<span style="color: #059669; font-size: 0.75rem; font-weight: 700;">(Highest)</span>' : ''}</td>
+              <td style="font-weight: 700;">${formatCurrency(b.amount)}</td>
+              <td style="color: var(--color-text-muted);">${time}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+    }
+
+    async function handlePlaceBid(e) {
+      e.preventDefault();
+      if (!API.isAuthenticated()) {
+        showToast('Please sign in to place a bid', 'info');
+        setTimeout(() => window.location.href = `/login.html?redirect=${encodeURIComponent(window.location.href)}`, 500);
+        return;
+      }
+
+      const amount = Number(document.getElementById('bid-amount-input').value);
+      const errBox = document.getElementById('bid-error-msg');
+      const btn = document.getElementById('place-bid-btn');
+
+      errBox.style.display = 'none';
+      btn.disabled = true;
+      btn.textContent = 'Submitting Bid...';
+
+      try {
+        await API.post(`/api/auctions/${currentAuction.id}/bids`, { amount });
+        showToast('Bid placed successfully! You are now the highest bidder.', 'success');
+        await loadAuctionData();
+      } catch (err) {
+        errBox.textContent = err.message || 'Bid was rejected by server.';
+        errBox.style.display = 'block';
+        showToast(err.message, 'error');
+        await loadAuctionData();
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadAuctionData();
+      // Poll every 3 seconds for live updates per TRD §3
+      pollInterval = setInterval(loadAuctionData, 3000);
+    });
+
+    window.addEventListener('beforeunload', () => {
+      if (pollInterval) clearInterval(pollInterval);
+    });
+  </script>
+</body>
+</html>

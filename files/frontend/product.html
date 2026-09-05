@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details — Auction Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    .product-detail-layout {
+      display: grid;
+      grid-template-columns: 1fr 1.15fr;
+      gap: 3rem;
+      padding: 2.5rem 0;
+    }
+    .gallery-container {
+      position: sticky;
+      top: 90px;
+    }
+    .main-image-wrap {
+      width: 100%;
+      height: 420px;
+      background: #FFFFFF;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+    .main-image {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    .thumbnails-strip {
+      display: flex;
+      gap: 0.75rem;
+      overflow-x: auto;
+    }
+    .thumb-item {
+      width: 70px;
+      height: 70px;
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .thumb-item.active {
+      border-color: var(--color-accent);
+    }
+    .thumb-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .product-info-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    .product-header h1 {
+      font-size: 1.85rem;
+      color: var(--color-primary);
+      margin-top: 0.35rem;
+      line-height: 1.25;
+    }
+    .product-price-box {
+      background: #FFFFFF;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+    }
+    .specs-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.75rem;
+    }
+    .specs-table td {
+      padding: 0.6rem 0.75rem;
+      border-bottom: 1px solid var(--color-border);
+      font-size: 0.9rem;
+    }
+    .specs-table td:first-child {
+      font-weight: 600;
+      color: var(--color-text-muted);
+      width: 35%;
+      background-color: var(--color-surface-hover);
+    }
+    .seller-card {
+      background: #FFFFFF;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    @media (max-width: 860px) {
+      .product-detail-layout {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+      .gallery-container {
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header class="navbar">
+    <div class="navbar-container">
+      <a href="/" class="nav-brand">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polygon points="12 6 12 12 16 14"></polygon>
+        </svg>
+        <span>Auction<span class="logo-highlight">Hub</span></span>
+      </a>
+      <a href="/search.html" class="nav-link">&larr; Back to Browse</a>
+      <div class="nav-actions">
+        <a href="/wishlist.html" class="nav-icon-btn" aria-label="Wishlist">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+        </a>
+        <a href="/cart.html" class="nav-icon-btn" aria-label="Shopping Cart">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+        </a>
+        <div id="nav-auth-container" class="nav-actions">
+          <a href="/login.html" class="nav-link">Sign In</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="loading-state" style="padding: 4rem; text-align: center; color: var(--color-text-muted);">
+      Loading listing details...
+    </div>
+
+    <div id="product-content" class="product-detail-layout" style="display: none;">
+      <!-- Gallery Column -->
+      <div class="gallery-container">
+        <div class="main-image-wrap">
+          <img id="main-product-img" src="" alt="Product Image" class="main-image">
+        </div>
+        <div class="thumbnails-strip" id="thumbnails-container"></div>
+      </div>
+
+      <!-- Info Column -->
+      <div class="product-info-panel">
+        <div class="product-header">
+          <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.4rem;">
+            <span id="badge-listing-type" class="badge"></span>
+            <span id="badge-condition" class="badge badge-condition"></span>
+            <span id="badge-category" style="font-size: 0.82rem; color: var(--color-text-muted); font-weight: 600;"></span>
+          </div>
+          <h1 id="product-title"></h1>
+          <div style="font-size: 0.9rem; color: var(--color-text-muted); margin-top: 0.25rem;">
+            Brand: <strong id="product-brand" style="color: var(--color-text-main);"></strong> &bull; Location: <span id="product-location"></span>
+          </div>
+        </div>
+
+        <!-- Pricing / Buy Now or Auction Action Box -->
+        <div class="product-price-box" id="action-box">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- AI Price Guidance / Auction Assistant (Contextual Panel) -->
+        <div id="ai-context-panel" class="ai-panel" style="display: none;">
+          <div class="ai-panel-header">
+            <span class="ai-badge">AI Assistant</span>
+            <span style="font-size: 0.82rem; color: var(--color-text-muted);">Advisory analysis</span>
+          </div>
+          <div id="ai-context-content" style="font-size: 0.9rem; line-height: 1.5;"></div>
+          <div class="ai-disclaimer">AI-assisted guidance, not a guaranteed value or transaction advice.</div>
+        </div>
+
+        <!-- Description -->
+        <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 1.5rem;">
+          <h3 style="font-size: 1.1rem; color: var(--color-primary); margin-bottom: 0.75rem;">Description</h3>
+          <p id="product-description" style="font-size: 0.92rem; color: var(--color-text-main); line-height: 1.6; white-space: pre-line;"></p>
+        </div>
+
+        <!-- Structured Specs -->
+        <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 1.5rem;">
+          <h3 style="font-size: 1.1rem; color: var(--color-primary); margin-bottom: 0.75rem;">Item Specifications</h3>
+          <table class="specs-table">
+            <tbody id="specs-table-body"></tbody>
+          </table>
+        </div>
+
+        <!-- Seller Card -->
+        <div class="seller-card">
+          <div>
+            <div style="font-size: 0.8rem; color: var(--color-text-muted); text-transform: uppercase; font-weight: 700;">Listed By</div>
+            <h4 id="seller-name" style="font-size: 1.1rem; color: var(--color-primary); margin: 0.15rem 0;"></h4>
+            <div style="font-size: 0.85rem; color: var(--color-text-muted);">
+              Rating: <span style="color: #F59E0B; font-weight: 700;">★ <span id="seller-rating-val">5.0</span></span> &bull; Sales: <span id="seller-sales-count">0</span>
+            </div>
+          </div>
+          <button class="btn btn-outline" onclick="contactSeller()">View Seller Profile</button>
+        </div>
+
+        <!-- Report Link -->
+        <div style="text-align: right; margin-top: 0.5rem;">
+          <button onclick="openReportModal()" style="font-size: 0.82rem; color: var(--color-text-light); text-decoration: underline;">
+            Report this listing
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script>
+    let currentProduct = null;
+
+    async function loadProduct() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      if (!id) {
+        window.location.href = '/search.html';
+        return;
+      }
+
+      try {
+        currentProduct = await API.get(`/api/products/${id}`);
+        renderProduct(currentProduct);
+      } catch (err) {
+        document.getElementById('loading-state').innerHTML = `
+          <h3>Product Not Found</h3>
+          <p>${escapeHtml(err.message)}</p>
+          <a href="/search.html" class="btn btn-primary" style="margin-top: 1rem;">Back to Browse</a>
+        `;
+      }
+    }
+
+    function renderProduct(p) {
+      document.getElementById('loading-state').style.display = 'none';
+      document.getElementById('product-content').style.display = 'grid';
+
+      document.title = `${p.title} — Auction Hub`;
+
+      // Header
+      document.getElementById('product-title').textContent = p.title;
+      document.getElementById('product-brand').textContent = p.brand || 'Unbranded';
+      document.getElementById('product-location').textContent = p.location || 'India';
+      document.getElementById('badge-condition').textContent = p.condition.replace('_', ' ');
+      document.getElementById('badge-category').textContent = p.category ? p.category.name : '';
+
+      const typeBadge = document.getElementById('badge-listing-type');
+      if (p.listing_type === 'auction') {
+        typeBadge.className = 'badge badge-auction';
+        typeBadge.textContent = '⚡ Live Auction';
+      } else {
+        typeBadge.className = 'badge badge-buy-now';
+        typeBadge.textContent = 'Buy Now';
+      }
+
+      // Images
+      const defaultImg = 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&auto=format&fit=crop&q=80';
+      const mainImg = (p.images && p.images.length > 0) ? p.images[0].storage_path : defaultImg;
+      document.getElementById('main-product-img').src = mainImg;
+
+      const thumbs = document.getElementById('thumbnails-container');
+      if (p.images && p.images.length > 1) {
+        thumbs.innerHTML = p.images.map((img, idx) => `
+          <div class="thumb-item ${idx === 0 ? 'active' : ''}" onclick="setMainImage('${img.storage_path}', this)">
+            <img src="${img.storage_path}" alt="Thumbnail">
+          </div>
+        `).join('');
+      } else {
+        thumbs.innerHTML = '';
+      }
+
+      // Action Box
+      const actionBox = document.getElementById('action-box');
+      if (p.listing_type === 'buy_now') {
+        actionBox.innerHTML = `
+          <div style="font-size: 0.85rem; color: var(--color-text-muted); font-weight: 600;">Fixed Price</div>
+          <div style="font-size: 2rem; font-weight: 800; color: var(--color-primary); margin: 0.25rem 0 1rem 0;">
+            ${formatCurrency(p.price)}
+          </div>
+          <div style="display: flex; gap: 1rem;">
+            <button class="btn btn-primary" style="flex: 1; padding: 0.85rem; font-size: 1.05rem;" onclick="handleBuyNow('${p.id}')">
+              Buy Now
+            </button>
+            <button class="btn btn-outline" onclick="addToCart('${p.id}')" title="Add to Cart">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+            </button>
+          </div>
+        `;
+      } else if (p.auction) {
+        const timeInfo = formatTimeRemaining(p.auction.end_time);
+        actionBox.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <div>
+              <div style="font-size: 0.85rem; color: #9A6C17; font-weight: 700;">Current Highest Bid</div>
+              <div style="font-size: 2.2rem; font-weight: 800; color: #B47D1C;">
+                ${formatCurrency(p.auction.current_bid || p.auction.starting_bid)}
+              </div>
+            </div>
+            <div class="auction-timer" style="font-size: 0.95rem; padding: 0.4rem 0.8rem;">
+              ${timeInfo.text}
+            </div>
+          </div>
+          <div style="margin: 1.25rem 0;">
+            <a href="/auction.html?id=${p.auction.id}" class="btn btn-accent" style="width: 100%; padding: 0.85rem; font-size: 1.05rem;">
+              Go to Live Bidding Room &rarr;
+            </a>
+          </div>
+        `;
+      }
+
+      // Description & Specs
+      document.getElementById('product-description').textContent = p.description;
+
+      const specsBody = document.getElementById('specs-table-body');
+      let specsHtml = `
+        <tr><td>Condition</td><td>${escapeHtml(p.condition.replace('_', ' '))}</td></tr>
+        <tr><td>Product Age</td><td>${p.product_age_months ? p.product_age_months + ' months' : 'Not specified'}</td></tr>
+        <tr><td>Original Retail Price</td><td>${p.original_price ? formatCurrency(p.original_price) : 'N/A'}</td></tr>
+        <tr><td>Accessories Included</td><td>${escapeHtml(p.accessories_included || 'None specified')}</td></tr>
+        <tr><td>Known Defects / Wear</td><td>${escapeHtml(p.defects_notes || 'None reported by seller')}</td></tr>
+        <tr><td>Warranty Info</td><td>${escapeHtml(p.warranty_info || 'No active warranty')}</td></tr>
+      `;
+
+      if (p.attributes && p.attributes.length > 0) {
+        p.attributes.forEach(attr => {
+          specsHtml += `<tr><td>${escapeHtml(attr.attribute_key)}</td><td>${escapeHtml(attr.attribute_value)}</td></tr>`;
+        });
+      }
+      specsBody.innerHTML = specsHtml;
+
+      // Seller
+      if (p.seller) {
+        document.getElementById('seller-name').textContent = p.seller.full_name;
+        document.getElementById('seller-rating-val').textContent = Number(p.seller.avg_rating || 5.0).toFixed(1);
+        document.getElementById('seller-sales-count').textContent = p.seller.total_sales;
+      }
+    }
+
+    function setMainImage(src, el) {
+      document.getElementById('main-product-img').src = src;
+      document.querySelectorAll('.thumb-item').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    function handleBuyNow(productId) {
+      if (!API.isAuthenticated()) {
+        showToast('Please sign in to proceed to checkout', 'info');
+        setTimeout(() => window.location.href = `/login.html?redirect=/checkout.html?product_id=${productId}`, 600);
+        return;
+      }
+      window.location.href = `/checkout.html?product_id=${productId}`;
+    }
+
+    function addToCart(productId) {
+      // Local cart storage
+      const cart = JSON.parse(localStorage.getItem('auction_hub_cart') || '[]');
+      if (!cart.includes(productId)) {
+        cart.push(productId);
+        localStorage.setItem('auction_hub_cart', JSON.stringify(cart));
+      }
+      showToast('Item added to cart!', 'success');
+    }
+
+    function openReportModal() {
+      if (!API.isAuthenticated()) {
+        showToast('Please sign in to report a listing', 'info');
+        return;
+      }
+      const reason = prompt("Please state the reason for reporting this listing (e.g. counterfeit, misleading condition, prohibited item):");
+      if (reason) {
+        API.post('/api/reports', {
+          target_type: 'product',
+          target_id: currentProduct.id,
+          reason: reason
+        }).then(() => showToast('Thank you. Your report has been submitted to moderators.', 'success'))
+          .catch(err => showToast(err.message, 'error'));
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', loadProduct);
+  </script>
+</body>
+</html>
